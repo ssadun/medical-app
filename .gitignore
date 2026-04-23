@@ -1,0 +1,6 @@
+node_modules/
+ui-template/
+data/medical_results.json
+medical-app.pid
+medical-app.log
+package-lock.json

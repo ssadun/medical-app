@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "lastUpdated": "01.01.2025",
+    "totalRecords": 6,
+    "outOfRange": 1,
+    "patient": "Sample Patient"
+  },
+  "records": [
+    {
+      "id": 0,
+      "date": "01.01.2025",
+      "facility": "Sample Hospital",
+      "test": "Hemogram – Hemoglobin",
+      "result": "14.2",
+      "unit": "g/dL",
+      "refLow": "13.0",
+      "refHigh": "17.0",
+      "flag": false
+    },
+    {
+      "id": 1,
+      "date": "01.01.2025",
+      "facility": "Sample Hospital",
+      "test": "Hemogram – Hematocrit",
+      "result": "42.1",
+      "unit": "%",
+      "refLow": "40.0",
+      "refHigh": "52.0",
+      "flag": false
+    },
+    {
+      "id": 2,
+      "date": "01.01.2025",
+      "facility": "Sample Hospital",
+      "test": "Hemogram – Platelet",
+      "result": "210",
+      "unit": "x10^3/uL",
+      "refLow": "150",
+      "refHigh": "400",
+      "flag": false
+    },
+    {
+      "id": 3,
+      "date": "01.01.2025",
+      "facility": "Sample Hospital",
+      "test": "Biochemistry – Glucose",
+      "result": "95",
+      "unit": "mg/dL",
+      "refLow": "70",
+      "refHigh": "100",
+      "flag": false
+    },
+    {
+      "id": 4,
+      "date": "01.01.2025",
+      "facility": "Sample Hospital",
+      "test": "Biochemistry – Creatinine",
+      "result": "0.9",
+      "unit": "mg/dL",
+      "refLow": "0.6",
+      "refHigh": "1.2",
+      "flag": false
+    },
+    {
+      "id": 5,
+      "date": "01.01.2025",
+      "facility": "Sample Hospital",
+      "test": "Biochemistry – LDL Cholesterol",
+      "result": "145",
+      "unit": "mg/dL",
+      "refLow": "0",
+      "refHigh": "130",
+      "flag": true
+    }
+  ],
+  "appointments": [],
+  "testCatalog": {},
+  "testInsights": {},
+  "patient": {
+    "firstName": "Sample",
+    "lastName": "Patient",
+    "idNumber": "",
+    "gender": "Male",
+    "bloodType": "A Positive (A+)",
+    "birthDate": "01.01.1990",
+    "height": "175",
+    "weight": "70"
+  }
+}

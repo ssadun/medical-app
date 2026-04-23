@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔬 Medical App — Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav id="sideNav"></nav>
+<main>
+  <h2>Dashboard</h2>
+  <div class="metrics" id="metrics"></div>
+  <div class="chart-card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+      <span style="font-size:13px;color:var(--text2)">Latest out-of-range test results:</span>
+    </div>
+    <div id="recentAbn" style="font-size:13px"></div>
+  </div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="auth-backdrop" id="authBackdrop">
+  <div class="auth-modal">
+    <h3>Sign In Required</h3>
+    <p>Please sign in to access your lab records.</p>
+    <form class="auth-form" id="authForm">
+      <input type="text" id="authUser" placeholder="Username" autocomplete="username" required>
+      <input type="password" id="authPass" placeholder="Password" autocomplete="current-password" required>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-row"><button class="primary" type="submit">Sign In</button></div>
+    </form>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

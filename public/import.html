@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔬 Medical App — PDF Import</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav id="sideNav"></nav>
+<main>
+  <h2>PDF Import</h2>
+  <div class="form-card">
+    <h3>Upload Lab Report PDF</h3>
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('pdfInput').click()">
+      <div style="font-size:28px">📄</div>
+      <p>Drag a PDF file here or click to select</p>
+      <p style="font-size:11px;margin-top:4px;color:var(--text3)">Max 20 MB</p>
+    </div>
+    <input type="file" id="pdfInput" accept=".pdf" style="display:none" onchange="handlePdfFile(this.files[0])">
+    <div id="importStatus" style="font-size:13px;color:var(--text2);margin-bottom:10px"></div>
+  </div>
+  <div id="importPreview" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <span id="importCount" style="font-size:13px;color:var(--text2)"></span>
+      <div style="display:flex;gap:8px">
+        <button onclick="selectAllImport(true)">Select all</button>
+        <button onclick="selectAllImport(false)">Clear</button>
+        <button class="primary" onclick="saveImport()">Save selected</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 80px 80px 80px 80px 80px 80px 40px;gap:4px;padding:7px 10px;background:var(--bg4);border-radius:var(--r) var(--r) 0 0;font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase">
+      <span>Test</span><span>Result</span><span>Unit</span><span>Ref Low</span><span>Ref High</span><span>Date</span><span>Facility</span><span>✓</span>
+    </div>
+    <div id="importRows" style="border:0.5px solid var(--border2);border-top:none;border-radius:0 0 var(--r) var(--r);max-height:420px;overflow-y:auto"></div>
+  </div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="auth-backdrop" id="authBackdrop">
+  <div class="auth-modal">
+    <h3>Sign In Required</h3>
+    <p>Please sign in to access your lab records.</p>
+    <form class="auth-form" id="authForm">
+      <input type="text" id="authUser" placeholder="Username" autocomplete="username" required>
+      <input type="password" id="authPass" placeholder="Password" autocomplete="current-password" required>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-row"><button class="primary" type="submit">Sign In</button></div>
+    </form>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script src="js/import.js"></script>
+</body>
+</html>

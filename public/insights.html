@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔬 Medical App — Test Insights</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav id="sideNav"></nav>
+<main>
+  <div class="section-head">
+    <h2>Test Insights</h2>
+    <div id="topNav" class="section-actions"></div>
+  </div>
+  <div class="insights-wrap">
+    <div class="ctrls">
+      <select id="ins-test" style="min-width:320px" onchange="loadSelectedInsight()"></select>
+      <button class="primary" onclick="saveInsight()">Save Insight</button>
+    </div>
+    <div class="editor-card">
+      <div class="editor-title">What This Test Means</div>
+      <div class="rte-toolbar">
+        <button type="button" onclick="rteCmd('bold')"><strong>B</strong></button>
+        <button type="button" onclick="rteCmd('italic')"><em>I</em></button>
+        <button type="button" onclick="rteCmd('insertUnorderedList')">• List</button>
+        <button type="button" onclick="rteCmd('insertOrderedList')">1. List</button>
+        <button type="button" onclick="rteCmd('removeFormat')">Clear</button>
+      </div>
+      <div id="ins-meaning" class="rte-editor" contenteditable="true"></div>
+    </div>
+    <div class="editor-card">
+      <div class="editor-title">If Out Of Ref High</div>
+      <div id="ins-high" class="rte-editor" contenteditable="true"></div>
+    </div>
+    <div class="editor-card">
+      <div class="editor-title">If Out Of Ref Low</div>
+      <div id="ins-low" class="rte-editor" contenteditable="true"></div>
+    </div>
+    <div class="insight-meta" id="ins-meta"></div>
+  </div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="auth-backdrop" id="authBackdrop">
+  <div class="auth-modal">
+    <h3>Sign In Required</h3>
+    <p>Please sign in to access your lab records.</p>
+    <form class="auth-form" id="authForm">
+      <input type="text" id="authUser" placeholder="Username" autocomplete="username" required>
+      <input type="password" id="authPass" placeholder="Password" autocomplete="current-password" required>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-row"><button class="primary" type="submit">Sign In</button></div>
+    </form>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script src="js/insights.js"></script>
+</body>
+</html>

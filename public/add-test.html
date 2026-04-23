@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔬 Medical App — Add Test Result</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav id="sideNav"></nav>
+<main>
+  <div class="section-head">
+    <h2>Add Test Result</h2>
+    <div id="topNav" class="section-actions"></div>
+  </div>
+  <div class="form-card">
+    <h3>Test Information</h3>
+    <div class="grid2">
+      <div class="field"><label>Date *</label><input type="text" id="f-tarih" placeholder="DD.MM.YYYY"></div>
+      <div class="field"><label>Facility *</label>
+        <input type="text" id="f-tesis" list="tesis-list" placeholder="Hospital name">
+        <datalist id="tesis-list"></datalist>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="field"><label>Test Name *</label>
+        <input type="text" id="f-tahlil" list="tahlil-list" placeholder="e.g. ALT, Hemoglobin...">
+        <datalist id="tahlil-list"></datalist>
+      </div>
+      <div class="field"><label>Result *</label><input type="text" id="f-sonuc" placeholder="e.g. 37"></div>
+    </div>
+    <div class="grid3" style="margin-top:10px">
+      <div class="field"><label>Unit</label><input type="text" id="f-birim" placeholder="e.g. U/L"></div>
+      <div class="field"><label>Ref Low</label><input type="text" id="f-refalt" placeholder="e.g. 0"></div>
+      <div class="field"><label>Ref High</label><input type="text" id="f-refust" placeholder="e.g. 55"></div>
+    </div>
+    <div class="form-actions">
+      <button class="primary" onclick="submitRecord()">Save</button>
+      <button onclick="clearForm()">Clear</button>
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="auth-backdrop" id="authBackdrop">
+  <div class="auth-modal">
+    <h3>Sign In Required</h3>
+    <p>Please sign in to access your lab records.</p>
+    <form class="auth-form" id="authForm">
+      <input type="text" id="authUser" placeholder="Username" autocomplete="username" required>
+      <input type="password" id="authPass" placeholder="Password" autocomplete="current-password" required>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-row"><button class="primary" type="submit">Sign In</button></div>
+    </form>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script src="js/add-test.js"></script>
+</body>
+</html>

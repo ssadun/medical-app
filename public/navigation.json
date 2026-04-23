@@ -1,0 +1,37 @@
+{
+  "navigation": [
+    { "label": "Dashboard", "href": "dashboard.html", "icon": "📊" },
+    {
+      "label": "Tests",
+      "href": "test.html",
+      "icon": "🧪",
+      "navCls": "top-nav-trend",
+      "children": [
+        { "label": "Trend Chart",      "href": "trend.html",           "icon": "📈", "navCls": "top-nav-trend" },
+        { "label": "Test Insights",    "href": "insights.html",        "icon": "🧾", "navCls": "top-nav-insights" },
+        { "label": "Add Test Results", "href": "add-test.html",        "icon": "➕", "navCls": "top-nav-add" },
+        { "label": "CSV Import",       "href": "import-csv-test.html", "icon": "📄", "navCls": "top-nav-import" }
+      ]
+    },
+    {
+      "label": "Appointments",
+      "href": "appointments.html",
+      "icon": "🏥",
+      "navCls": "top-nav-trend",
+      "children": [
+        { "label": "Schedule View",   "href": "schedule.html",              "icon": "🗓️", "navCls": "top-nav-insights" },
+        { "label": "Add Appointment", "href": "add-appoinment.html",        "icon": "➕", "navCls": "top-nav-add" },
+        { "label": "CSV Import",      "href": "import-csv-appoinment.html", "icon": "📄", "navCls": "top-nav-import" }
+      ]
+    },
+    {
+      "label": "Patient Info",
+      "href": "patient.html",
+      "icon": "👤",
+      "navCls": "top-nav-trend",
+      "children": [
+        { "label": "Add New Patient", "href": "add-patient.html", "icon": "🧍", "navCls": "top-nav-add" }
+      ]
+    }
+  ]
+}

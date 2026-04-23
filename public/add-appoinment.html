@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔬 Medical App — Add Appointment</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav id="sideNav"></nav>
+<main>
+  <div class="section-head">
+    <h2>Add Appointment</h2>
+    <div id="topNav" class="section-actions"></div>
+  </div>
+
+  <div class="form-card">
+    <h3>New Appointment</h3>
+    <div class="grid2">
+      <div class="field">
+        <label>Date (DD.MM.YYYY) *</label>
+        <input type="text" id="a-date" placeholder="e.g. 25.04.2026">
+      </div>
+      <div class="field">
+        <label>Hospital *</label>
+        <input type="text" id="a-hospital" placeholder="Hospital name">
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="field">
+        <label>Service *</label>
+        <input type="text" id="a-service" placeholder="e.g. Cardiology">
+      </div>
+      <div class="field">
+        <label>Doctor *</label>
+        <input type="text" id="a-doctor" placeholder="Doctor name">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="primary" onclick="addAppointment()">Save Appointment</button>
+      <button onclick="clearAppointmentForm()">Clear</button>
+    </div>
+    <p class="note">ID is generated automatically and is not shown on the form.</p>
+  </div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="auth-backdrop" id="authBackdrop">
+  <div class="auth-modal">
+    <h3>Sign In Required</h3>
+    <p>Please sign in to access your lab records.</p>
+    <form class="auth-form" id="authForm">
+      <input type="text" id="authUser" placeholder="Username" autocomplete="username" required>
+      <input type="password" id="authPass" placeholder="Password" autocomplete="current-password" required>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-row"><button class="primary" type="submit">Sign In</button></div>
+    </form>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script src="js/add-appoinment.js"></script>
+</body>
+</html>

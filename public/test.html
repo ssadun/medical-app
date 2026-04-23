@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔬 Medical App — Tests</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav id="sideNav"></nav>
+<main>
+  <div class="section-head">
+    <h2>Tests</h2>
+    <div id="topNav" class="section-actions"></div>
+  </div>
+  <div class="ctrls">
+    <input type="text" id="q" placeholder="Test name, facility, result..." onkeydown="if(event.key==='Enter')applyFilters()">
+    <select id="fac"><option value="">All facilities</option></select>
+    <select id="yr"><option value="">All years</option></select>
+    <select id="flag">
+      <option value="">All</option>
+      <option value="1">Only out-of-range</option>
+      <option value="0">Only normal</option>
+    </select>
+    <button class="primary" onclick="applyFilters()">Apply</button>
+  </div>
+  <div class="tbl-wrap">
+    <table class="fixed-cols">
+      <thead><tr>
+        <th id="th-tarih" style="width:92px;cursor:pointer" onclick="setSort('tarih')">Date <span id="sort-tarih"></span></th>
+        <th id="th-tesis" style="width:160px;cursor:pointer" onclick="setSort('tesis')">Facility <span id="sort-tesis"></span></th>
+        <th id="th-tahlil" style="width:180px;cursor:pointer" onclick="setSort('tahlil')">Test <span id="sort-tahlil"></span></th>
+        <th id="th-sonuc" style="width:85px;cursor:pointer" onclick="setSort('sonuc')">Result <span id="sort-sonuc"></span></th>
+        <th id="th-birim" style="width:75px;cursor:pointer" onclick="setSort('birim')">Unit <span id="sort-birim"></span></th>
+        <th id="th-refAlt" style="width:58px;cursor:pointer" onclick="setSort('refAlt')">Ref Low <span id="sort-refAlt"></span></th>
+        <th id="th-refUst" style="width:58px;cursor:pointer" onclick="setSort('refUst')">Ref High <span id="sort-refUst"></span></th>
+        <th style="width:110px"></th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <div class="pager" id="pager"></div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="auth-backdrop" id="authBackdrop">
+  <div class="auth-modal">
+    <h3>Sign In Required</h3>
+    <p>Please sign in to access your lab records.</p>
+    <form class="auth-form" id="authForm">
+      <input type="text" id="authUser" placeholder="Username" autocomplete="username" required>
+      <input type="password" id="authPass" placeholder="Password" autocomplete="current-password" required>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-row"><button class="primary" type="submit">Sign In</button></div>
+    </form>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script src="js/test.js"></script>
+</body>
+</html>
