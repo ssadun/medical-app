@@ -32,8 +32,10 @@ function parseCsv(text) {
   const DATE_RE = /^\d{2}\.\d{2}\.\d{4}$/;
 
   lines.forEach((line, i) => {
-    // Split on comma, allowing quoted fields
-    const parts = line.split(',').map(p => p.trim().replace(/^"|"$/g, ''));
+    // Accept comma/semicolon/tab separated rows and remove optional quotes
+    const parts = line
+      .split(/[;,\t]/)
+      .map(p => p.trim().replace(/^"|"$/g, ''));
     if (parts.length < 4) return; // skip short lines
 
     const [date, hospital, service, doctor] = parts;
@@ -89,28 +91,32 @@ function selectAll(v) {
 }
 
 async function saveSelected() {
-  const selected = PARSED_ROWS.filter((r, i) => {
-    const cb = document.getElementById('rc-' + i);
-    return cb && cb.checked && r.valid;
-  });
+  try {
+    const selected = PARSED_ROWS.filter((r, i) => {
+      const cb = document.getElementById('rc-' + i);
+      return cb && cb.checked && r.valid;
+    });
 
-  if (!selected.length) { toast('No valid rows selected', 'err'); return; }
+    if (!selected.length) { toast('No valid rows selected', 'err'); return; }
 
-  const res = await fetch(apiUrl('appointments/import'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ rows: selected })
-  });
-  if (res.status === 401) { showAuthModal(); return; }
-  const d = await res.json();
-  if (!d.ok) { toast('Error: ' + (d.error || 'Import failed'), 'err'); return; }
+    const res = await fetch(apiUrl('appointments/import'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rows: selected })
+    });
+    if (res.status === 401) { showAuthModal(); return; }
+    const d = await parseApiJson(res, '/api/appointments/import');
+    if (!res.ok || !d.ok) { toast('Error: ' + (d.error || 'Import failed'), 'err'); return; }
 
-  if (d.errors && d.errors.length) {
-    toast(`${d.added} saved · ${d.errors.length} skipped`, 'ok');
-  } else {
-    toast(`${d.added} appointment${d.added !== 1 ? 's' : ''} saved ✓`, 'ok');
+    if (d.errors && d.errors.length) {
+      toast(`${d.added} saved · ${d.errors.length} skipped`, 'ok');
+    } else {
+      toast(`${d.added} appointment${d.added !== 1 ? 's' : ''} saved ✓`, 'ok');
+    }
+    setTimeout(() => { window.location.href = 'appointments.html'; }, 800);
+  } catch (e) {
+    toast('Import failed: ' + e.message, 'err');
   }
-  setTimeout(() => { window.location.href = 'appointments.html'; }, 800);
 }
 
 boot();
