@@ -8,8 +8,9 @@ const crypto  = require('crypto');
 
 const app  = express();
 const PORT = process.env.PORT || 3234;
-const DATA_FILE    = path.join(__dirname, 'data', 'medical_results.json');
-const SAMPLE_FILE  = path.join(__dirname, 'data', 'medical_results_sample.json');
+const DATA_FILE         = path.join(__dirname, 'data', 'medical_results.json');
+const SAMPLE_FILE       = path.join(__dirname, 'data', 'medical_results_sample.json');
+const APPOINTMENTS_FILE = path.join(__dirname, 'data', 'appointments.json');
 const AUTH_COOKIE = 'medical_app_auth';
 const AUTH_TTL_MS = 4 * 60 * 60 * 1000;
 const AUTH_PBKDF2_ITERATIONS = 100000;
@@ -211,11 +212,31 @@ function toFileSchema(data) {
   };
 }
 
+function loadAppointments() {
+  if (!fs.existsSync(APPOINTMENTS_FILE)) return [];
+  try {
+    const raw = fs.readFileSync(APPOINTMENTS_FILE, 'utf-8');
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { return []; }
+}
+
+function saveAppointments(list) {
+  fs.writeFileSync(APPOINTMENTS_FILE, JSON.stringify(list, null, 2), 'utf-8');
+}
+
+function nextAppointmentId(list) {
+  return list.length ? Math.max(...list.map(a => Number(a.id) || 0)) + 1 : 1;
+}
+
 function loadData() {
   const file = fs.existsSync(DATA_FILE) ? DATA_FILE : SAMPLE_FILE;
   const raw = fs.readFileSync(file, 'utf-8');
   const parsed = JSON.parse(raw);
-  return ensureDataShape(toInternalSchema(parsed));
+  const data = ensureDataShape(toInternalSchema(parsed));
+  // Always use appointments.json as the canonical store
+  data.appointments = loadAppointments();
+  return data;
 }
 
 function saveData(data) {
@@ -225,6 +246,7 @@ function saveData(data) {
   data.meta.referansDisi = data.kayitlar.filter(r => r.flag).length;
   data.meta.sonGuncelleme = new Date().toLocaleDateString('tr-TR');
   fs.writeFileSync(DATA_FILE, JSON.stringify(toFileSchema(data), null, 2), 'utf-8');
+  // Appointments are stored separately; don't include them in medical_results.json
 }
 
 function sanitizeRichHtml(html) {
@@ -409,21 +431,20 @@ app.post('/api/kayitlar', (req, res) => {
 // GET all appointments
 app.get('/api/appointments', (req, res) => {
   try {
-    const data = loadData();
-    res.json({ ok: true, appointments: data.appointments || [] });
+    res.json({ ok: true, appointments: loadAppointments() });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-// POST add appointment
+// POST add single appointment
 app.post('/api/appointments', (req, res) => {
   try {
-    const data = loadData();
-    const date = String(req.body.date || '').trim();
+    const list = loadAppointments();
+    const date     = String(req.body.date     || '').trim();
     const hospital = String(req.body.hospital || '').trim();
-    const service = String(req.body.service || '').trim();
-    const doctor = String(req.body.doctor || '').trim();
+    const service  = String(req.body.service  || '').trim();
+    const doctor   = String(req.body.doctor   || '').trim();
 
     if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
       return res.status(400).json({ error: 'date must be DD.MM.YYYY' });
@@ -432,14 +453,48 @@ app.post('/api/appointments', (req, res) => {
       return res.status(400).json({ error: 'hospital, service and doctor are required' });
     }
 
-    const id = data.appointments.length
-      ? Math.max(...data.appointments.map(a => Number(a.id) || 0)) + 1
-      : 1;
-
-    const appointment = { id, date, hospital, service, doctor };
-    data.appointments.push(appointment);
-    saveData(data);
+    const appointment = { id: nextAppointmentId(list), date, hospital, service, doctor };
+    list.push(appointment);
+    saveAppointments(list);
     res.json({ ok: true, appointment });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST bulk import appointments from CSV
+app.post('/api/appointments/import', (req, res) => {
+  try {
+    const rows = req.body.rows;
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return res.status(400).json({ error: 'No rows provided' });
+    }
+
+    const list = loadAppointments();
+    let added = 0;
+    const errors = [];
+
+    rows.forEach((row, i) => {
+      const date     = String(row.date     || '').trim();
+      const hospital = String(row.hospital || '').trim();
+      const service  = String(row.service  || '').trim();
+      const doctor   = String(row.doctor   || '').trim();
+
+      if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+        errors.push(`Row ${i + 1}: invalid date "${date}"`);
+        return;
+      }
+      if (!hospital || !service || !doctor) {
+        errors.push(`Row ${i + 1}: hospital, service and doctor are required`);
+        return;
+      }
+
+      list.push({ id: nextAppointmentId(list), date, hospital, service, doctor });
+      added++;
+    });
+
+    if (added > 0) saveAppointments(list);
+    res.json({ ok: true, added, errors });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -448,14 +503,13 @@ app.post('/api/appointments', (req, res) => {
 // DELETE appointment
 app.delete('/api/appointments/:id', (req, res) => {
   try {
-    const data = loadData();
+    const list = loadAppointments();
     const id = parseInt(req.params.id, 10);
-    const before = data.appointments.length;
-    data.appointments = data.appointments.filter(a => a.id !== id);
-    if (data.appointments.length === before) {
+    const filtered = list.filter(a => a.id !== id);
+    if (filtered.length === list.length) {
       return res.status(404).json({ error: 'Appointment not found' });
     }
-    saveData(data);
+    saveAppointments(filtered);
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
