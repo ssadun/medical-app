@@ -99,20 +99,43 @@ async function saveSelected() {
 
     if (!selected.length) { toast('No valid rows selected', 'err'); return; }
 
-    const res = await fetch(apiUrl('appointments/import'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rows: selected })
-    });
-    if (res.status === 401) { showAuthModal(); return; }
-    const d = await parseApiJson(res, '/api/appointments/import');
-    if (!res.ok || !d.ok) { toast('Error: ' + (d.error || 'Import failed'), 'err'); return; }
+    let added = 0;
+    let skipped = 0;
 
-    if (d.errors && d.errors.length) {
-      toast(`${d.added} saved · ${d.errors.length} skipped`, 'ok');
-    } else {
-      toast(`${d.added} appointment${d.added !== 1 ? 's' : ''} saved ✓`, 'ok');
+    try {
+      const res = await fetch(apiUrl('appointments/import'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rows: selected })
+      });
+      if (res.status === 401) { showAuthModal(); return; }
+      const d = await parseApiJson(res, '/api/appointments/import');
+      if (!res.ok || !d.ok) throw new Error(d.error || 'Import failed');
+      added = Number(d.added) || 0;
+      skipped = Array.isArray(d.errors) ? d.errors.length : 0;
+    } catch (bulkErr) {
+      // Backward-compatible fallback for servers that don't have /api/appointments/import yet.
+      if (!String(bulkErr.message || '').includes('404')) throw bulkErr;
+      for (const row of selected) {
+        const res = await fetch(apiUrl('appointments'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date: row.date, hospital: row.hospital, service: row.service, doctor: row.doctor })
+        });
+        if (res.status === 401) { showAuthModal(); return; }
+        let d = {};
+        try { d = await parseApiJson(res, '/api/appointments'); } catch { d = {}; }
+        if (res.ok && d.ok) added++;
+        else skipped++;
+      }
     }
+
+    if (added === 0) {
+      toast('No appointments were saved', 'err');
+      return;
+    }
+    if (skipped > 0) toast(`${added} saved · ${skipped} skipped`, 'ok');
+    else toast(`${added} appointment${added !== 1 ? 's' : ''} saved ✓`, 'ok');
     setTimeout(() => { window.location.href = 'appointments.html'; }, 800);
   } catch (e) {
     toast('Import failed: ' + e.message, 'err');
