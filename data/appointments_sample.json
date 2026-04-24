@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "date": "05.01.2025",
+    "hospital": "Sample Hospital",
+    "service": "Cardiology",
+    "doctor": "Dr. Sample A"
+  },
+  {
+    "id": 2,
+    "date": "12.01.2025",
+    "hospital": "Sample Hospital",
+    "service": "Internal Medicine",
+    "doctor": "Dr. Sample B"
+  },
+  {
+    "id": 3,
+    "date": "20.02.2025",
+    "hospital": "City Clinic",
+    "service": "Radiology",
+    "doctor": "Dr. Sample C"
+  },
+  {
+    "id": 4,
+    "date": "07.03.2025",
+    "hospital": "City Clinic",
+    "service": "Neurology",
+    "doctor": "Dr. Sample D"
+  },
+  {
+    "id": 5,
+    "date": "15.04.2025",
+    "hospital": "Sample Hospital",
+    "service": "Orthopedics",
+    "doctor": "Dr. Sample A"
+  }
+]

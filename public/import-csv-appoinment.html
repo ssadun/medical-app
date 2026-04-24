@@ -29,10 +29,10 @@
   <div id="importPreview" style="display:none;margin-top:12px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
       <span id="importCount" style="font-size:13px;color:var(--text2)"></span>
-      <div style="display:flex;gap:8px">
-        <button onclick="selectAll(true)">Select all</button>
-        <button onclick="selectAll(false)">Clear</button>
-        <button class="primary" onclick="saveSelected()">Save selected</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="top-nav-btn top-nav-trend" onclick="selectAll(true)"><span>☑️</span>Select all</button>
+        <button class="top-nav-btn top-nav-insights" onclick="selectAll(false)"><span>✖️</span>Clear</button>
+        <button class="top-nav-btn top-nav-import" onclick="saveSelected()"><span>💾</span>Save selected</button>
       </div>
     </div>
     <div class="tbl-wrap">
@@ -44,7 +44,7 @@
             <th>Hospital</th>
             <th>Service</th>
             <th>Doctor</th>
-            <th style="width:90px">Status</th>
+            <th style="width:130px">Status</th>
           </tr>
         </thead>
         <tbody id="previewBody"></tbody>

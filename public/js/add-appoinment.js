@@ -27,6 +27,12 @@ async function addAppointment() {
     body: JSON.stringify({ date, hospital, service, doctor })
   });
   if (res.status === 401) { showAuthModal(); return; }
+  if (res.status === 409) {
+    toast('Duplicate: an appointment with the same date, hospital and doctor already exists', 'err');
+    document.getElementById('dup-hint').style.display = 'block';
+    return;
+  }
+  document.getElementById('dup-hint').style.display = 'none';
   const d = await parseApiJson(res, '/api/appointments');
   if (!res.ok || !d.ok) {
     toast('Error: ' + (d.error || 'Could not save appointment'), 'err');
@@ -43,6 +49,7 @@ function clearAppointmentForm() {
   document.getElementById('a-hospital').value = '';
   document.getElementById('a-service').value = '';
   document.getElementById('a-doctor').value = '';
+  document.getElementById('dup-hint').style.display = 'none';
 }
 
 boot();

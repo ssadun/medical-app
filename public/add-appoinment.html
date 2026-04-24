@@ -40,7 +40,7 @@
       <button class="primary" onclick="addAppointment()">Save Appointment</button>
       <button onclick="clearAppointmentForm()">Clear</button>
     </div>
-    <p class="note">ID is generated automatically and is not shown on the form.</p>
+    <p id="dup-hint" style="display:none;color:var(--err,#e55);font-size:13px;margin-top:8px">A record with the same date, hospital and doctor already exists.</p>
   </div>
 </main>
 </div>

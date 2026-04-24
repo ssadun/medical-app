@@ -10,7 +10,8 @@
         { "label": "Trend Chart",      "href": "trend.html",           "icon": "📈", "navCls": "top-nav-trend" },
         { "label": "Test Insights",    "href": "insights.html",        "icon": "🧾", "navCls": "top-nav-insights" },
         { "label": "Add Test Results", "href": "add-test.html",        "icon": "➕", "navCls": "top-nav-add" },
-        { "label": "CSV Import",       "href": "import-csv-test.html", "icon": "📄", "navCls": "top-nav-import" }
+        { "label": "CSV Import",       "href": "import-csv-test.html", "icon": "📄", "navCls": "top-nav-import" },
+        { "label": "Recover",          "href": "deleted-tests.html",    "icon": "♻️", "navCls": "top-nav-import" }
       ]
     },
     {
@@ -19,9 +20,10 @@
       "icon": "🏥",
       "navCls": "top-nav-trend",
       "children": [
-        { "label": "Schedule View",   "href": "schedule.html",              "icon": "🗓️", "navCls": "top-nav-insights" },
-        { "label": "Add Appointment", "href": "add-appoinment.html",        "icon": "➕", "navCls": "top-nav-add" },
-        { "label": "CSV Import",      "href": "import-csv-appoinment.html", "icon": "📄", "navCls": "top-nav-import" }
+        { "label": "Schedule View",        "href": "schedule.html",              "icon": "🗓️", "navCls": "top-nav-insights" },
+        { "label": "Add Appointment",       "href": "add-appoinment.html",        "icon": "➕", "navCls": "top-nav-add" },
+        { "label": "CSV Import",            "href": "import-csv-appoinment.html", "icon": "📄", "navCls": "top-nav-import" },
+        { "label": "Recover",               "href": "deleted-appointments.html",  "icon": "♻️", "navCls": "top-nav-import" }
       ]
     },
     {

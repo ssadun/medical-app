@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔬 Medical App — Test CSV Import</title>
+<title>🔬 Medical App — Recover Tests</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -10,13 +10,30 @@
 <nav id="sideNav"></nav>
 <main>
   <div class="section-head">
-    <h2>Test CSV Import</h2>
+    <h2>Recover Tests</h2>
     <div id="topNav" class="section-actions"></div>
   </div>
-  <div class="form-card">
-    <h3>CSV Import</h3>
-    <p class="note">CSV import UI for tests can be implemented here.</p>
+
+  <div class="tbl-wrap">
+    <table class="fixed-cols">
+      <thead>
+        <tr>
+          <th style="width:90px">Date</th>
+          <th style="width:150px">Facility</th>
+          <th style="width:180px">Test</th>
+          <th style="width:80px">Result</th>
+          <th style="width:70px">Unit</th>
+          <th style="width:60px">Low</th>
+          <th style="width:60px">High</th>
+          <th style="width:170px">Deleted At</th>
+          <th style="width:200px"></th>
+        </tr>
+      </thead>
+      <tbody id="deletedBody"></tbody>
+    </table>
   </div>
+
+  <div id="emptyMsg" style="display:none;padding:24px;color:var(--text2);text-align:center;font-size:14px">No deleted test records.</div>
 </main>
 </div>
 
@@ -35,6 +52,6 @@
 </div>
 
 <script src="shared.js"></script>
-<script src="js/import-csv-test.js"></script>
+<script src="js/deleted-tests.js"></script>
 </body>
 </html>

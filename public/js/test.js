@@ -145,10 +145,10 @@ function viewTrend(testName) {
 }
 
 async function deleteRecord(id) {
-  if (!confirm('Are you sure you want to delete this record?')) return;
+  if (!await appConfirm('Move this test record to Recover? You can restore it later.', { title: 'Delete Test Record', okText: 'Move to Recover' })) return;
   const res = await fetch(apiUrl('kayit/' + id), { method: 'DELETE' });
   if (res.status === 401) { showAuthModal(); return; }
-  if (res.ok) { ALL = ALL.filter(r => r.id !== id); renderTable(); toast('Record deleted', 'ok'); }
+  if (res.ok) { ALL = ALL.filter(r => r.id !== id); renderTable(); toast('Record moved to Recover', 'ok'); }
   else toast('Delete failed', 'err');
 }
 

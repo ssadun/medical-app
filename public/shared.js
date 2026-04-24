@@ -55,7 +55,7 @@ function renderTopNav(containerId = 'topNav') {
   ];
   el.innerHTML = allItems
     .filter(item => item.href !== page)
-    .map(item => `<a href="${item.href}" class="top-nav-btn ${item.navCls || 'top-nav-trend'}"><span>${item.icon}</span>${item.label}</a>`)
+    .map(item => `<a href="${item.href}" class="top-nav-btn top-nav-import"><span>${item.icon}</span>${item.label}</a>`)
     .join('');
 }
 
@@ -97,6 +97,72 @@ function toast(msg, type = 'ok') {
   t.textContent = msg;
   t.className = 'toast show ' + (type === 'err' ? 'err' : 'ok');
   setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function ensureAppDialog() {
+  if (document.getElementById('appDialogBackdrop')) return;
+  const root = document.createElement('div');
+  root.id = 'appDialogBackdrop';
+  root.className = 'app-dialog-backdrop';
+  root.innerHTML = `
+    <div class="app-dialog" role="dialog" aria-modal="true" aria-labelledby="appDialogTitle" aria-describedby="appDialogMessage">
+      <div class="app-dialog-head">
+        <h3 id="appDialogTitle">Confirm</h3>
+        <button class="app-dialog-close" id="appDialogClose" aria-label="Close">×</button>
+      </div>
+      <div class="app-dialog-body">
+        <p id="appDialogMessage"></p>
+      </div>
+      <div class="app-dialog-actions">
+        <button class="top-nav-btn top-nav-import" id="appDialogCancel">Cancel</button>
+        <button class="top-nav-btn app-dialog-danger" id="appDialogOk">Confirm</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(root);
+}
+
+function appConfirm(message, options = {}) {
+  ensureAppDialog();
+  const backdrop = document.getElementById('appDialogBackdrop');
+  const titleEl = document.getElementById('appDialogTitle');
+  const msgEl = document.getElementById('appDialogMessage');
+  const okBtn = document.getElementById('appDialogOk');
+  const cancelBtn = document.getElementById('appDialogCancel');
+  const closeBtn = document.getElementById('appDialogClose');
+
+  titleEl.textContent = options.title || 'Confirm Action';
+  msgEl.textContent = message || '';
+  okBtn.textContent = options.okText || 'Confirm';
+  cancelBtn.textContent = options.cancelText || 'Cancel';
+  okBtn.classList.toggle('app-dialog-danger', (options.tone || 'danger') === 'danger');
+
+  return new Promise(resolve => {
+    const finish = (value) => {
+      backdrop.classList.remove('open');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      closeBtn.removeEventListener('click', onCancel);
+      backdrop.removeEventListener('click', onBackdrop);
+      document.removeEventListener('keydown', onKey);
+      resolve(value);
+    };
+    const onOk = () => finish(true);
+    const onCancel = () => finish(false);
+    const onBackdrop = (e) => { if (e.target === backdrop) finish(false); };
+    const onKey = (e) => {
+      if (e.key === 'Escape') finish(false);
+      if (e.key === 'Enter') finish(true);
+    };
+
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    closeBtn.addEventListener('click', onCancel);
+    backdrop.addEventListener('click', onBackdrop);
+    document.addEventListener('keydown', onKey);
+    backdrop.classList.add('open');
+    okBtn.focus();
+  });
 }
 
 function showAuthModal() {
@@ -165,6 +231,7 @@ renderSideNav(DEFAULT_NAVIGATION);
 
 // Wire auth form on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
+  ensureAppDialog();
   loadNavigationConfig().then(items => { renderSideNav(items); markActiveNav(); renderTopNav(); });
   const form = document.getElementById('authForm');
   if (form) form.addEventListener('submit', login);

@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔬 Medical App — Test CSV Import</title>
+<title>🔬 Medical App — Deleted Appointments</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -10,13 +10,26 @@
 <nav id="sideNav"></nav>
 <main>
   <div class="section-head">
-    <h2>Test CSV Import</h2>
+    <h2>Deleted Appointments</h2>
     <div id="topNav" class="section-actions"></div>
   </div>
-  <div class="form-card">
-    <h3>CSV Import</h3>
-    <p class="note">CSV import UI for tests can be implemented here.</p>
+
+  <div class="tbl-wrap">
+    <table class="fixed-cols">
+      <thead>
+        <tr>
+          <th style="width:120px">Date</th>
+          <th style="width:220px">Hospital</th>
+          <th style="width:180px">Service</th>
+          <th style="width:180px">Doctor</th>
+          <th style="width:200px">Deleted At</th>
+          <th style="width:190px"></th>
+        </tr>
+      </thead>
+      <tbody id="deletedBody"></tbody>
+    </table>
   </div>
+  <div id="emptyMsg" style="display:none;padding:24px;color:var(--text2);text-align:center;font-size:14px">No deleted appointments.</div>
 </main>
 </div>
 
@@ -35,6 +48,6 @@
 </div>
 
 <script src="shared.js"></script>
-<script src="js/import-csv-test.js"></script>
+<script src="js/deleted-appointments.js"></script>
 </body>
 </html>

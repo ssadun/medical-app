@@ -10,7 +10,8 @@ const app  = express();
 const PORT = process.env.PORT || 3234;
 const DATA_FILE         = path.join(__dirname, 'data', 'medical_results.json');
 const SAMPLE_FILE       = path.join(__dirname, 'data', 'medical_results_sample.json');
-const APPOINTMENTS_FILE = path.join(__dirname, 'data', 'appointments.json');
+const APPOINTMENTS_FILE        = path.join(__dirname, 'data', 'appointments.json');
+const APPOINTMENTS_SAMPLE_FILE = path.join(__dirname, 'data', 'appointments_sample.json');
 const AUTH_COOKIE = 'medical_app_auth';
 const AUTH_TTL_MS = 4 * 60 * 60 * 1000;
 const AUTH_PBKDF2_ITERATIONS = 100000;
@@ -145,7 +146,9 @@ function toInternalSchema(data) {
       birim: r.birim ?? r.unit ?? '',
       refAlt: r.refAlt ?? r.refLow ?? '',
       refUst: r.refUst ?? r.refHigh ?? '',
-      flag: Boolean(r.flag)
+      flag: Boolean(r.flag),
+      active: r.active !== false,
+      deletedAt: r.deletedAt || ''
     })),
     appointments: rawAppointments.map(a => ({
       id: a.id,
@@ -187,7 +190,9 @@ function toFileSchema(data) {
       unit: r.birim,
       refLow: r.refAlt,
       refHigh: r.refUst,
-      flag: Boolean(r.flag)
+      flag: Boolean(r.flag),
+      active: r.active !== false,
+      deletedAt: r.deletedAt || ''
     })),
     appointments: data.appointments.map(a => ({
       id: a.id,
@@ -213,9 +218,12 @@ function toFileSchema(data) {
 }
 
 function loadAppointments() {
-  if (!fs.existsSync(APPOINTMENTS_FILE)) return [];
+  const file = fs.existsSync(APPOINTMENTS_FILE)
+    ? APPOINTMENTS_FILE
+    : (fs.existsSync(APPOINTMENTS_SAMPLE_FILE) ? APPOINTMENTS_SAMPLE_FILE : null);
+  if (!file) return [];
   try {
-    const raw = fs.readFileSync(APPOINTMENTS_FILE, 'utf-8');
+    const raw = fs.readFileSync(file, 'utf-8');
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
   } catch { return []; }
@@ -227,6 +235,18 @@ function saveAppointments(list) {
 
 function nextAppointmentId(list) {
   return list.length ? Math.max(...list.map(a => Number(a.id) || 0)) + 1 : 1;
+}
+
+function normalizeAppointmentPart(v) {
+  return String(v || '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function appointmentKey(date, hospital, doctor) {
+  return [
+    String(date || '').trim(),
+    normalizeAppointmentPart(hospital),
+    normalizeAppointmentPart(doctor)
+  ].join('|');
 }
 
 function loadData() {
@@ -242,8 +262,9 @@ function loadData() {
 function saveData(data) {
   ensureDataShape(data);
   // Recalculate meta
-  data.meta.toplamKayit  = data.kayitlar.length;
-  data.meta.referansDisi = data.kayitlar.filter(r => r.flag).length;
+  const activeRecords = data.kayitlar.filter(r => r.active !== false);
+  data.meta.toplamKayit  = activeRecords.length;
+  data.meta.referansDisi = activeRecords.filter(r => r.flag).length;
   data.meta.sonGuncelleme = new Date().toLocaleDateString('tr-TR');
   fs.writeFileSync(DATA_FILE, JSON.stringify(toFileSchema(data), null, 2), 'utf-8');
   // Appointments are stored separately; don't include them in medical_results.json
@@ -346,9 +367,20 @@ app.post('/api/auth/logout', (req, res) => {
 // GET all data
 app.get('/api/data', (req, res) => {
   try {
-    res.json(loadData());
+    const data = loadData();
+    res.json({ ...data, kayitlar: data.kayitlar.filter(r => r.active !== false) });
   } catch (e) {
     res.status(500).json({ error: 'Could not read data: ' + e.message });
+  }
+});
+
+// GET deleted test records
+app.get('/api/kayit/deleted', (req, res) => {
+  try {
+    const data = loadData();
+    res.json({ ok: true, kayitlar: data.kayitlar.filter(r => r.active === false) });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 });
 
@@ -403,6 +435,8 @@ app.post('/api/kayit', (req, res) => {
       const hi = parseFloat(kayit.refUst);
       kayit.flag = !isNaN(v) && ((!isNaN(hi) && v > hi) || (!isNaN(lo) && v < lo));
     }
+    kayit.active = true;
+    kayit.deletedAt = '';
     data.kayitlar.push(kayit);
     saveData(data);
     res.json({ ok: true, kayit });
@@ -418,7 +452,7 @@ app.post('/api/kayitlar', (req, res) => {
     const newOnes = req.body.kayitlar || [];
     let added = 0;
     for (const k of newOnes) {
-      data.kayitlar.push({ id: nextId(data.kayitlar), ...k });
+      data.kayitlar.push({ id: nextId(data.kayitlar), ...k, active: true, deletedAt: '' });
       added++;
     }
     saveData(data);
@@ -428,10 +462,21 @@ app.post('/api/kayitlar', (req, res) => {
   }
 });
 
-// GET all appointments
+// GET all active appointments
 app.get('/api/appointments', (req, res) => {
   try {
-    res.json({ ok: true, appointments: loadAppointments() });
+    const all = loadAppointments();
+    res.json({ ok: true, appointments: all.filter(a => a.active !== false) });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET deleted (soft-deleted) appointments
+app.get('/api/appointments/deleted', (req, res) => {
+  try {
+    const all = loadAppointments();
+    res.json({ ok: true, appointments: all.filter(a => a.active === false) });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -453,6 +498,12 @@ app.post('/api/appointments', (req, res) => {
       return res.status(400).json({ error: 'hospital, service and doctor are required' });
     }
 
+    const key = appointmentKey(date, hospital, doctor);
+    const exists = list.some(a => a.active !== false && appointmentKey(a.date, a.hospital, a.doctor) === key);
+    if (exists) {
+      return res.status(409).json({ error: 'Duplicate appointment: same date, hospital and doctor already exists' });
+    }
+
     const appointment = { id: nextAppointmentId(list), date, hospital, service, doctor };
     list.push(appointment);
     saveAppointments(list);
@@ -471,6 +522,8 @@ app.post('/api/appointments/import', (req, res) => {
     }
 
     const list = loadAppointments();
+    const existingKeys = new Set(list.filter(a => a.active !== false).map(a => appointmentKey(a.date, a.hospital, a.doctor)));
+    const incomingKeys = new Set();
     let added = 0;
     const errors = [];
 
@@ -489,7 +542,18 @@ app.post('/api/appointments/import', (req, res) => {
         return;
       }
 
+      const key = appointmentKey(date, hospital, doctor);
+      if (existingKeys.has(key)) {
+        errors.push(`Row ${i + 1}: duplicate of existing appointment (same date, hospital, doctor)`);
+        return;
+      }
+      if (incomingKeys.has(key)) {
+        errors.push(`Row ${i + 1}: duplicate within import file (same date, hospital, doctor)`);
+        return;
+      }
+
       list.push({ id: nextAppointmentId(list), date, hospital, service, doctor });
+      incomingKeys.add(key);
       added++;
     });
 
@@ -500,16 +564,46 @@ app.post('/api/appointments/import', (req, res) => {
   }
 });
 
-// DELETE appointment
-app.delete('/api/appointments/:id', (req, res) => {
+// PATCH recover a soft-deleted appointment
+app.patch('/api/appointments/:id/recover', (req, res) => {
+  try {
+    const list = loadAppointments();
+    const id = parseInt(req.params.id, 10);
+    const idx = list.findIndex(a => a.id === id);
+    if (idx === -1) return res.status(404).json({ error: 'Appointment not found' });
+    list[idx].active = true;
+    delete list[idx].deletedAt;
+    saveAppointments(list);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// DELETE appointment permanently
+app.delete('/api/appointments/:id/permanent', (req, res) => {
   try {
     const list = loadAppointments();
     const id = parseInt(req.params.id, 10);
     const filtered = list.filter(a => a.id !== id);
-    if (filtered.length === list.length) {
-      return res.status(404).json({ error: 'Appointment not found' });
-    }
+    if (filtered.length === list.length) return res.status(404).json({ error: 'Appointment not found' });
     saveAppointments(filtered);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// DELETE appointment (soft delete)
+app.delete('/api/appointments/:id', (req, res) => {
+  try {
+    const list = loadAppointments();
+    const id = parseInt(req.params.id, 10);
+    const idx = list.findIndex(a => a.id === id);
+    if (idx === -1) return res.status(404).json({ error: 'Appointment not found' });
+    list[idx].active = false;
+    list[idx].deletedAt = new Date().toISOString();
+    saveAppointments(list);
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -534,8 +628,41 @@ app.put('/api/kayit/:id', (req, res) => {
 app.delete('/api/kayit/:id', (req, res) => {
   try {
     const data = loadData();
+    const id = parseInt(req.params.id, 10);
+    const idx = data.kayitlar.findIndex(r => r.id === id);
+    if (idx === -1) return res.status(404).json({ error: 'Record not found' });
+    data.kayitlar[idx].active = false;
+    data.kayitlar[idx].deletedAt = new Date().toISOString();
+    saveData(data);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PATCH recover a soft-deleted test record
+app.patch('/api/kayit/:id/recover', (req, res) => {
+  try {
+    const data = loadData();
+    const id = parseInt(req.params.id, 10);
+    const idx = data.kayitlar.findIndex(r => r.id === id);
+    if (idx === -1) return res.status(404).json({ error: 'Record not found' });
+    data.kayitlar[idx].active = true;
+    data.kayitlar[idx].deletedAt = '';
+    saveData(data);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// DELETE test record permanently
+app.delete('/api/kayit/:id/permanent', (req, res) => {
+  try {
+    const data = loadData();
+    const id = parseInt(req.params.id, 10);
     const before = data.kayitlar.length;
-    data.kayitlar = data.kayitlar.filter(r => r.id !== parseInt(req.params.id));
+    data.kayitlar = data.kayitlar.filter(r => r.id !== id);
     if (data.kayitlar.length === before) return res.status(404).json({ error: 'Record not found' });
     saveData(data);
     res.json({ ok: true });

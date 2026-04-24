@@ -1,15 +1,35 @@
 let PARSED_ROWS = [];
+let EXISTING_KEYS = new Set();
+
+function normalizeAppointmentPart(v) {
+  return String(v || '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function appointmentKey(date, hospital, doctor) {
+  return [
+    String(date || '').trim(),
+    normalizeAppointmentPart(hospital),
+    normalizeAppointmentPart(doctor)
+  ].join('|');
+}
 
 function onLoginSuccess() { boot(); }
 
 async function boot() {
   const ok = await checkAuth();
   if (!ok) return;
-  await loadPatientName();
+  await Promise.all([loadPatientName(), loadExistingAppointments()]);
   const dz = document.getElementById('dropZone');
   dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('over'); });
   dz.addEventListener('dragleave', () => dz.classList.remove('over'));
   dz.addEventListener('drop',      e => { e.preventDefault(); dz.classList.remove('over'); handleFile(e.dataTransfer.files[0]); });
+}
+
+async function loadExistingAppointments() {
+  const res = await fetch(apiUrl('appointments'));
+  if (res.status === 401) { showAuthModal(); return; }
+  const d = await parseApiJson(res, '/api/appointments');
+  EXISTING_KEYS = new Set((d.appointments || []).map(a => appointmentKey(a.date, a.hospital, a.doctor)));
 }
 
 function handleFile(file) {
@@ -30,6 +50,7 @@ function parseCsv(text) {
   const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   const rows = [];
   const DATE_RE = /^\d{2}\.\d{2}\.\d{4}$/;
+  const fileSeen = new Set();
 
   lines.forEach((line, i) => {
     // Accept comma/semicolon/tab separated rows and remove optional quotes
@@ -44,7 +65,20 @@ function parseCsv(text) {
     if (i === 0 && !DATE_RE.test(date)) return;
 
     const valid = DATE_RE.test(date) && hospital && service && doctor;
-    rows.push({ date, hospital, service, doctor, valid });
+    const key = appointmentKey(date, hospital, doctor);
+    const duplicateExisting = EXISTING_KEYS.has(key);
+    const duplicateFile = fileSeen.has(key);
+    if (valid) fileSeen.add(key);
+
+    rows.push({
+      date,
+      hospital,
+      service,
+      doctor,
+      valid,
+      duplicate: duplicateExisting || duplicateFile,
+      duplicateReason: duplicateExisting ? 'Existing' : (duplicateFile ? 'CSV' : '')
+    });
   });
 
   PARSED_ROWS = rows;
@@ -61,21 +95,24 @@ function renderPreview(rows) {
     return;
   }
 
-  const valid = rows.filter(r => r.valid).length;
-  const invalid = rows.length - valid;
-  statusEl.textContent = `${rows.length} rows parsed · ${valid} valid · ${invalid > 0 ? invalid + ' invalid (shown in red)' : '0 invalid'}`;
+  const valid = rows.filter(r => r.valid && !r.duplicate).length;
+  const invalid = rows.filter(r => !r.valid).length;
+  const duplicates = rows.filter(r => r.duplicate).length;
+  statusEl.textContent = `${rows.length} rows parsed · ${valid} importable · ${invalid} invalid · ${duplicates} duplicates`;
 
-  document.getElementById('importCount').textContent = `${valid} valid rows ready to import`;
+  document.getElementById('importCount').textContent = `${valid} rows ready to import`;
   document.getElementById('previewBody').innerHTML = rows.map((r, i) => `
-    <tr class="${r.valid ? '' : 'abn'}">
-      <td><input type="checkbox" id="rc-${i}" ${r.valid ? 'checked' : 'disabled'}></td>
+    <tr class="${r.valid && !r.duplicate ? '' : 'abn'}">
+      <td><input type="checkbox" id="rc-${i}" ${r.valid && !r.duplicate ? 'checked' : 'disabled'}></td>
       <td>${r.date || '<em style="color:var(--text3)">missing</em>'}</td>
       <td title="${r.hospital}">${r.hospital || '<em style="color:var(--text3)">missing</em>'}</td>
       <td title="${r.service}">${r.service || '<em style="color:var(--text3)">missing</em>'}</td>
       <td title="${r.doctor}">${r.doctor || '<em style="color:var(--text3)">missing</em>'}</td>
-      <td>${r.valid
-        ? '<span class="bmi-badge normal">OK</span>'
-        : '<span class="bmi-badge obese">Invalid</span>'}</td>
+      <td>${!r.valid
+        ? '<span class="bmi-badge obese">Invalid</span>'
+        : (r.duplicate
+          ? `<span class="bmi-badge over">Dup: ${r.duplicateReason || 'record'}</span>`
+          : '<span class="bmi-badge normal">OK</span>')}</td>
     </tr>`).join('');
 
   previewEl.style.display = 'block';
@@ -94,7 +131,7 @@ async function saveSelected() {
   try {
     const selected = PARSED_ROWS.filter((r, i) => {
       const cb = document.getElementById('rc-' + i);
-      return cb && cb.checked && r.valid;
+      return cb && cb.checked && r.valid && !r.duplicate;
     });
 
     if (!selected.length) { toast('No valid rows selected', 'err'); return; }
