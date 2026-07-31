@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Medical App icon">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4f8ef7"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#0d0f14"/>
+  <rect x="52" y="52" width="408" height="408" rx="88" fill="url(#g)" opacity="0.2"/>
+  <path d="M188 116h136v80h80v136h-80v80H188v-80h-80V196h80z" fill="url(#g)"/>
+  <path d="M240 180h32v152h-32z" fill="#f2ffff"/>
+  <path d="M180 236h152v32H180z" fill="#f2ffff"/>
+</svg>

@@ -3,7 +3,10 @@
 (function injectSharedHead() {
   const h = document.head;
   const links = [
-    { rel: 'icon', type: 'image/svg+xml', href: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50' font-size='50'%3E%F0%9F%94%AC%3C/text%3E%3C/svg%3E" },
+    { rel: 'icon', type: 'image/svg+xml', href: 'icons/medical-app-icon.svg' },
+    { rel: 'manifest', href: 'manifest.webmanifest' },
+    { rel: 'mask-icon', href: 'icons/medical-app-icon.svg', color: '#4f8ef7' },
+    { rel: 'apple-touch-icon', href: 'icons/medical-app-icon.svg' },
     { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
     { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: '' },
     { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap' }
@@ -14,12 +17,29 @@
     Object.entries(attrs).forEach(([k, v]) => { if (k === 'crossOrigin') el.crossOrigin = v; else el[k] = v; });
     h.appendChild(el);
   });
+
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (!metaTheme) {
+    const theme = document.createElement('meta');
+    theme.name = 'theme-color';
+    theme.content = '#0d0f14';
+    h.appendChild(theme);
+  }
 })();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(new URL('sw.js', window.location.href)).catch(() => {});
+  });
+}
 
 const DEFAULT_NAVIGATION = [
   { label: 'Dashboard', href: 'dashboard.html', icon: '📊' },
-  { label: 'Tests', href: 'test.html', icon: '🧪' },
-  { label: 'Appointments', href: 'appointments.html', icon: '🏥' },
+  { label: 'Appointments', href: 'list-appointments.html', icon: '🏥' },
+  { label: 'Diseases', href: 'list-diseases.html', icon: '🩺' },
+  { label: 'Reports', href: 'list-reports.html', icon: '📑' },
+  { label: 'Tests', href: 'list-test.html', icon: '🔬' },
+  { label: 'Medical Directory', href: 'manage.html', icon: '📚' },
   { label: 'Patient Info', href: 'patient.html', icon: '👤' }
 ];
 
@@ -27,7 +47,7 @@ function renderSideNav(items = DEFAULT_NAVIGATION) {
   const nav = document.getElementById('sideNav');
   if (!nav) return;
   nav.innerHTML = `
-    <div class="nav-logo"><h1><span class="app-icon" aria-hidden="true">🔬</span>Medical App</h1><p id="navPatientName">—</p></div>
+    <div class="nav-logo"><h1><span class="app-icon" aria-hidden="true">⚕️</span>Medical App</h1><p id="navPatientName">—</p></div>
     ${items.map(i => `
       <a class="nav-item" href="${i.href}"><span class="nav-icon">${i.icon || '•'}</span><span>${i.label}</span></a>
     `).join('')}
@@ -166,20 +186,27 @@ function appConfirm(message, options = {}) {
 }
 
 function showAuthModal() {
-  document.getElementById('authBackdrop').classList.add('open');
-  document.getElementById('authError').textContent = '';
+  const page = location.pathname.split('/').pop() || 'dashboard.html';
+  if (page === 'login.html') return;
+  const next = encodeURIComponent(page + location.search + location.hash);
+  window.location.href = `login.html?next=${next}`;
 }
 
 function hideAuthModal() {
-  document.getElementById('authBackdrop').classList.remove('open');
+  const backdrop = document.getElementById('authBackdrop');
+  if (backdrop) backdrop.classList.remove('open');
 }
 
 async function login(e) {
-  e.preventDefault();
+  if (e) e.preventDefault();
   const username = document.getElementById('authUser').value.trim();
   const password = document.getElementById('authPass').value;
   const errEl = document.getElementById('authError');
-  errEl.textContent = '';
+  if (!username || !password) {
+    if (errEl) errEl.textContent = 'Username and password are required';
+    return;
+  }
+  if (errEl) errEl.textContent = '';
   const res = await fetch(apiUrl('auth/login'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -189,24 +216,28 @@ async function login(e) {
   try {
     data = await parseApiJson(res, '/api/auth/login');
   } catch (err) {
-    errEl.textContent = err.message;
+    if (errEl) errEl.textContent = err.message;
     return;
   }
   if (!res.ok || !data.ok) {
-    errEl.textContent = data.error || 'Login failed';
+    if (errEl) errEl.textContent = data.error || 'Login failed';
     return;
   }
   document.getElementById('authPass').value = '';
-  hideAuthModal();
-  if (typeof onLoginSuccess === 'function') onLoginSuccess();
+  if (typeof onLoginSuccess === 'function') {
+    onLoginSuccess();
+    return;
+  }
+  const params = new URLSearchParams(location.search);
+  window.location.href = params.get('next') || 'dashboard.html';
 }
 
 async function logout() {
   await fetch(apiUrl('auth/logout'), { method: 'POST' });
-  showAuthModal();
+  window.location.href = 'login.html';
 }
 
-// Call on each page to verify session; shows modal if 401
+// Call on each protected page to verify session; redirects to login if 401
 async function checkAuth() {
   const res = await fetch(apiUrl('auth/me'));
   if (res.status === 401) { showAuthModal(); return false; }
