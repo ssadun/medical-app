@@ -3,7 +3,47 @@ function onLoginSuccess() { boot(); }
 async function boot() {
   const ok = await checkAuth();
   if (!ok) return;
-  await loadPatientName();
+  await Promise.all([loadAppointmentOptions(), loadPatientName()]);
+}
+
+function setOptions(listId, values) {
+  const dl = document.getElementById(listId);
+  if (!dl) return;
+  dl.innerHTML = '';
+  values.forEach(v => {
+    const o = document.createElement('option');
+    o.value = v;
+    dl.appendChild(o);
+  });
+}
+
+function uniqSorted(values) {
+  return [...new Set((values || []).map(v => String(v || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr'));
+}
+
+async function loadDirectory() {
+  const res = await fetch(apiUrl('medical-directory'));
+  if (res.status === 401) { showAuthModal(); return null; }
+  const d = await parseApiJson(res, '/api/medical-directory');
+  return d.directory || null;
+}
+
+async function loadAppointmentOptions() {
+  const [aRes, directory] = await Promise.all([
+    fetch(apiUrl('appointments')),
+    loadDirectory()
+  ]);
+  if (aRes.status === 401) { showAuthModal(); return; }
+  const d = await parseApiJson(aRes, '/api/appointments');
+  const list = d.appointments || [];
+
+  const hospitals = uniqSorted([...(directory?.hospitals || []), ...list.map(a => a.hospital)]);
+  const services  = uniqSorted([...(directory?.services || []), ...list.map(a => a.service)]);
+  const doctors   = uniqSorted([...(directory?.doctors || []), ...list.map(a => a.doctor)]);
+
+  setOptions('hospital-list', hospitals);
+  setOptions('service-list', services);
+  setOptions('doctor-list', doctors);
 }
 
 async function addAppointment() {
@@ -41,7 +81,7 @@ async function addAppointment() {
 
   clearAppointmentForm();
   toast('Appointment saved', 'ok');
-  setTimeout(() => { window.location.href = 'appointments.html'; }, 700);
+  setTimeout(() => { window.location.href = 'list-appointments.html'; }, 700);
 }
 
 function clearAppointmentForm() {

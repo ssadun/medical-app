@@ -40,7 +40,7 @@ function renderDeleted() {
   tbody.innerHTML = DELETED.map(r => `
     <tr class="${r.flag ? 'abn' : ''}">
       <td>${r.tarih || ''}</td>
-      <td title="${r.tesis || ''}">${r.tesis || ''}</td>
+      <td title="${r.hospital || r.tesis || ''}">${r.hospital || r.tesis || ''}</td>
       <td title="${r.tahlil || ''}">${r.tahlil || ''}</td>
       <td class="${r.flag ? 'bad' : 'ok'}">${r.flag ? '<span class="dot"></span>' : ''}${r.sonuc || ''}</td>
       <td>${r.birim || ''}</td>

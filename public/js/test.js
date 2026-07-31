@@ -23,11 +23,13 @@ async function boot() {
 }
 
 function buildSelects() {
-  const facs = [...new Set(ALL.map(r=>r.tesis))].filter(Boolean).sort();
+  const facs = [...new Set(ALL.map(r => r.hospital || r.tesis || ''))].filter(Boolean).sort();
   const yrs  = [...new Set(ALL.map(r=>r.tarih.split('.')[2]))].filter(Boolean).sort();
   const fSel = document.getElementById('fac');
+  fSel.innerHTML = '<option value="">All hospitals</option>';
   facs.forEach(f=>{const o=document.createElement('option');o.value=f;o.textContent=f;fSel.appendChild(o);});
   const ySel = document.getElementById('yr');
+  ySel.innerHTML = '<option value="">All years</option>';
   yrs.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y;ySel.appendChild(o);});
 }
 
@@ -71,11 +73,12 @@ function applyFilters() {
 function filt() {
   const { q, fac, yr, flag } = activeFilter;
   return ALL.filter(r => {
-    if (fac  && r.tesis !== fac) return false;
+    const hospital = r.hospital || r.tesis || '';
+    if (fac  && hospital !== fac) return false;
     if (yr   && r.tarih.split('.')[2] !== yr) return false;
     if (flag === '1' && !r.flag) return false;
     if (flag === '0' &&  r.flag) return false;
-    if (q    && !(r.tahlil.toLowerCase().includes(q) || r.tesis.toLowerCase().includes(q) || r.sonuc.toLowerCase().includes(q))) return false;
+    if (q    && !(r.tahlil.toLowerCase().includes(q) || hospital.toLowerCase().includes(q) || r.sonuc.toLowerCase().includes(q))) return false;
     return true;
   });
 }
@@ -90,6 +93,9 @@ function compareBySort(a, b) {
   const k = sortState.key;
   const dir = sortState.dir === 'asc' ? 1 : -1;
   if (k === 'tarih') return (parseDateValue(a.tarih) - parseDateValue(b.tarih)) * dir;
+  if (k === 'hospital') {
+    return String(a.hospital || a.tesis || '').toLowerCase().localeCompare(String(b.hospital || b.tesis || '').toLowerCase(), 'tr') * dir;
+  }
   if (k === 'sonuc' || k === 'refAlt' || k === 'refUst') {
     const av = parseFloat(String(a[k] || '').replace(',', '.'));
     const bv = parseFloat(String(b[k] || '').replace(',', '.'));
@@ -99,7 +105,7 @@ function compareBySort(a, b) {
 }
 
 function updateSortIndicators() {
-  ['tarih','tesis','tahlil','sonuc','birim','refAlt','refUst'].forEach(k => {
+  ['tarih','hospital','tahlil','sonuc','birim','refAlt','refUst'].forEach(k => {
     const el = document.getElementById('sort-' + k);
     const th = document.getElementById('th-' + k);
     if (!el) return;
@@ -121,12 +127,13 @@ function renderTable() {
   document.getElementById('tbody').innerHTML = slice.map(r => `
     <tr class="${r.flag ? 'abn' : ''}">
       <td>${r.tarih}</td>
-      <td title="${r.tesis}">${r.tesis}</td>
+      <td title="${r.hospital || r.tesis || ''}">${r.hospital || r.tesis || ''}</td>
       <td title="${r.tahlil}">${r.tahlil}</td>
       <td class="${r.flag ? 'bad' : 'ok'}">${r.flag ? '<span class="dot"></span>' : ''}${r.sonuc}</td>
       <td>${r.birim}</td><td>${r.refAlt}</td><td>${r.refUst}</td>
       <td style="white-space:nowrap;overflow:visible;max-width:none">
-        <button class="sm" onclick="viewTrend(this.dataset.test)" data-test="${r.tahlil.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">View</button>
+        <button class="sm" onclick="viewTrend(this.dataset.test)" data-test="${r.tahlil.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">Trend</button>
+        <button class="sm" onclick="window.location.href='edit-test.html?id=${r.id}'">Edit</button>
         <button class="sm danger" onclick="deleteRecord(${r.id})">Delete</button>
       </td>
     </tr>`).join('');
@@ -141,7 +148,7 @@ function renderTable() {
 function chPg(d) { pg += d; renderTable(); syncUrl(); }
 
 function viewTrend(testName) {
-  window.location.href = 'trend.html?ttest=' + encodeURIComponent(testName);
+  window.location.href = 'view-tests-trend.html?ttest=' + encodeURIComponent(testName);
 }
 
 async function deleteRecord(id) {

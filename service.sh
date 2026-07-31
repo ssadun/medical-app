@@ -10,7 +10,7 @@ LOG_FILE="${SCRIPT_DIR}/medical-app.log"
 ECOSYSTEM_FILE="${SCRIPT_DIR}/ecosystem.config.js"
 
 SERVICE_NAME="Medical App"
-SERVICE_ICON="🔬"
+SERVICE_ICON="⚕️"
 SERVICE_HOST="${SERVICE_HOST:-127.0.0.1}"
 
 PORT="3234"

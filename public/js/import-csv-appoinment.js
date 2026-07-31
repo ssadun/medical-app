@@ -173,7 +173,7 @@ async function saveSelected() {
     }
     if (skipped > 0) toast(`${added} saved · ${skipped} skipped`, 'ok');
     else toast(`${added} appointment${added !== 1 ? 's' : ''} saved ✓`, 'ok');
-    setTimeout(() => { window.location.href = 'appointments.html'; }, 800);
+    setTimeout(() => { window.location.href = 'list-appointments.html'; }, 800);
   } catch (e) {
     toast('Import failed: ' + e.message, 'err');
   }

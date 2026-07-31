@@ -1,0 +1,5 @@
+[
+  { "id": 1, "name": "Blood Test" },
+  { "id": 2, "name": "MRI" },
+  { "id": 3, "name": "X-Ray" }
+]

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medical App — Medical Directory</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav id="sideNav"></nav>
+<main>
+  <div class="section-head">
+    <h2>Medical Directory</h2>
+    <div id="topNav" class="section-actions"></div>
+  </div>
+
+  <div class="metrics" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
+    <a class="metric" href="manage-hospitals.html" style="text-decoration:none;color:inherit">
+      <div class="lbl">Directory</div><div class="val" style="font-size:18px">Hospitals</div>
+    </a>
+    <a class="metric" href="manage-services.html" style="text-decoration:none;color:inherit">
+      <div class="lbl">Directory</div><div class="val" style="font-size:18px">Services</div>
+    </a>
+    <a class="metric" href="manage-doctors.html" style="text-decoration:none;color:inherit">
+      <div class="lbl">Directory</div><div class="val" style="font-size:18px">Doctors</div>
+    </a>
+    <a class="metric" href="manage-disease-diagnosis.html" style="text-decoration:none;color:inherit">
+      <div class="lbl">Directory</div><div class="val" style="font-size:18px">Diagnosis</div>
+    </a>
+    <a class="metric" href="manage-report-types.html" style="text-decoration:none;color:inherit">
+      <div class="lbl">Directory</div><div class="val" style="font-size:18px">Report Types</div>
+    </a>
+    <a class="metric" href="manage-test-types.html" style="text-decoration:none;color:inherit">
+      <div class="lbl">Directory</div><div class="val" style="font-size:18px">Test Types</div>
+    </a>
+  </div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="shared.js"></script>
+<script src="js/manage.js"></script>
+</body>
+</html>

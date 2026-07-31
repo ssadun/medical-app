@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medical App — Add Disease</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav id="sideNav"></nav>
+<main>
+  <div class="section-head">
+    <h2>Add Disease Record</h2>
+    <div id="topNav" class="section-actions"></div>
+  </div>
+
+  <div class="form-card">
+    <h3>Disease Information</h3>
+    <div class="grid2">
+      <div class="field">
+        <label>Date (DD.MM.YYYY) *</label>
+        <input type="text" id="d-date" placeholder="e.g. 25.04.2026">
+      </div>
+      <div class="field">
+        <label>Service *</label>
+        <input type="text" id="d-service" list="service-list" placeholder="e.g. Cardiology">
+        <datalist id="service-list"></datalist>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="field">
+        <label>Diagnosis *</label>
+        <input type="text" id="d-diagnosis" list="diagnosis-list" placeholder="e.g. Hypertension">
+        <datalist id="diagnosis-list"></datalist>
+      </div>
+      <div class="field">
+        <label>Doctor *</label>
+        <input type="text" id="d-doctor" list="doctor-list" placeholder="Doctor name">
+        <datalist id="doctor-list"></datalist>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="primary" onclick="addDisease()">Save Disease</button>
+      <button onclick="clearDiseaseForm()">Clear</button>
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="shared.js"></script>
+<script src="js/add-disease.js"></script>
+</body>
+</html>

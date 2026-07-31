@@ -22,7 +22,7 @@ function buildMeta(m) {
   document.getElementById('metrics').innerHTML = `
     <div class="metric"><div class="lbl">Total records</div><div class="val">${m.toplamKayit}</div></div>
     <div class="metric"><div class="lbl">Out of range</div><div class="val red">${m.referansDisi}</div></div>
-    <div class="metric"><div class="lbl">Facilities</div><div class="val">${[...new Set(ALL.map(r=>r.tesis))].filter(Boolean).length}</div></div>
+    <div class="metric"><div class="lbl">Hospitals</div><div class="val">${[...new Set(ALL.map(r => r.hospital || r.tesis || ''))].filter(Boolean).length}</div></div>
     <div class="metric"><div class="lbl">Unique tests</div><div class="val">${[...new Set(ALL.map(r=>r.tahlil))].length}</div></div>
     <div class="metric"><div class="lbl">Last updated</div><div class="val" style="font-size:14px">${m.sonGuncelleme}</div></div>`;
 }
@@ -33,7 +33,7 @@ function renderDashboard() {
   document.getElementById('recentAbn').innerHTML = abn.map(r=>`
     <div style="display:flex;gap:12px;padding:6px 0;border-bottom:0.5px solid var(--border);flex-wrap:wrap">
       <span style="color:var(--text3);min-width:85px">${r.tarih}</span>
-      <span style="color:var(--text2);min-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.tesis}</span>
+      <span style="color:var(--text2);min-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.hospital || r.tesis || ''}</span>
       <span style="min-width:160px">${r.tahlil}</span>
       <span class="bad"><span class="dot"></span>${r.sonuc} ${r.birim}</span>
       ${r.refUst?`<span style="color:var(--text3);font-size:12px">ref: ${r.refAlt||'?'}–${r.refUst}</span>`:''}

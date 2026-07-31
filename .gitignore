@@ -2,6 +2,8 @@ node_modules/
 ui-template/
 data/medical_results.json
 data/appointments.json
+data/diseases.json
+data/reports.json
 medical-app.pid
 medical-app.log
 package-lock.json

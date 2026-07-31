@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medical App — Manage Diagnosis</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav id="sideNav"></nav>
+<main>
+  <div class="section-head">
+    <h2>Diagnosis</h2>
+    <div id="topNav" class="section-actions"></div>
+  </div>
+  <div class="form-card">
+    <h3>Manage Diagnosis</h3>
+    <div class="ctrls">
+      <input type="text" id="md-input" placeholder="Add diagnosis..." onkeydown="if(event.key==='Enter')addValue()">
+      <button class="primary" onclick="addValue()">Add</button>
+    </div>
+    <div class="tbl-wrap">
+      <table class="fixed-cols">
+        <thead><tr><th>Diagnosis</th><th style="width:110px"></th></tr></thead>
+        <tbody id="md-body"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+<script>window.MD_CONFIG={key:'diagnosis',label:'Diagnosis'};</script>
+<script src="shared.js"></script>
+<script src="js/manage-directory.js"></script>
+</body>
+</html>

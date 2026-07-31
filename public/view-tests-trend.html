@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medical App — Trend Chart</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav id="sideNav"></nav>
+<main>
+  <div class="section-head">
+    <h2>Trend Chart</h2>
+    <div id="topNav" class="section-actions"></div>
+  </div>
+  <div class="ctrls">
+    <select id="ttest" onchange="onTestChange()" style="min-width:260px"><option value="">Select test...</option></select>
+  </div>
+  <div class="chart-card">
+    <div class="legend" id="tleg"></div>
+    <canvas id="cv" height="280"></canvas>
+  </div>
+  <p class="note" id="tnote"></p>
+  <div id="trendTable"></div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="shared.js"></script>
+<script src="js/trend.js"></script>
+</body>
+</html>

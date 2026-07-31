@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medical App — Reports</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav id="sideNav"></nav>
+<main>
+  <div class="section-head">
+    <h2>Reports</h2>
+    <div id="topNav" class="section-actions"></div>
+  </div>
+
+  <div class="ctrls">
+    <input type="text" id="q" placeholder="Report number, type, doctor, diagnosis..." onkeydown="if(event.key==='Enter')applyFilters()">
+    <select id="reportType"><option value="">All report types</option></select>
+    <select id="yr"><option value="">All years</option></select>
+    <button class="primary" onclick="applyFilters()">Apply</button>
+  </div>
+
+  <div class="tbl-wrap">
+    <table class="fixed-cols">
+      <thead>
+        <tr>
+          <th id="th-date" style="width:120px;cursor:pointer" onclick="setSort('date')">Date <span id="sort-date"></span></th>
+          <th id="th-reportNumber" style="width:150px;cursor:pointer" onclick="setSort('reportNumber')">Report Number <span id="sort-reportNumber"></span></th>
+          <th id="th-reportType" style="width:170px;cursor:pointer" onclick="setSort('reportType')">Report Type <span id="sort-reportType"></span></th>
+          <th id="th-starting" style="width:120px;cursor:pointer" onclick="setSort('starting')">Starting <span id="sort-starting"></span></th>
+          <th id="th-ending" style="width:120px;cursor:pointer" onclick="setSort('ending')">Ending <span id="sort-ending"></span></th>
+          <th id="th-doctor" style="width:180px;cursor:pointer" onclick="setSort('doctor')">Doctor <span id="sort-doctor"></span></th>
+          <th id="th-diagnosis" style="width:220px;cursor:pointer" onclick="setSort('diagnosis')">Diagnosis <span id="sort-diagnosis"></span></th>
+          <th style="width:150px"></th>
+        </tr>
+      </thead>
+      <tbody id="reportsBody"></tbody>
+    </table>
+  </div>
+  <div class="pager" id="pager"></div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="shared.js"></script>
+<script src="js/reports.js"></script>
+</body>
+</html>

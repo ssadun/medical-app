@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medical App — Add Report</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav id="sideNav"></nav>
+<main>
+  <div class="section-head">
+    <h2>Add Report Record</h2>
+    <div id="topNav" class="section-actions"></div>
+  </div>
+
+  <div class="form-card">
+    <h3>Report Information</h3>
+    <div class="grid2">
+      <div class="field">
+        <label>Date (DD.MM.YYYY) *</label>
+        <input type="text" id="r-date" placeholder="e.g. 25.04.2026">
+      </div>
+      <div class="field">
+        <label>Report Number *</label>
+        <input type="text" id="r-report-number" placeholder="e.g. RPT-2026-0042">
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="field">
+        <label>Report Type *</label>
+        <input type="text" id="r-report-type" list="report-type-list" placeholder="e.g. Consultation">
+        <datalist id="report-type-list"></datalist>
+      </div>
+      <div class="field">
+        <label>Doctor *</label>
+        <input type="text" id="r-doctor" list="doctor-list" placeholder="Doctor name">
+        <datalist id="doctor-list"></datalist>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="field">
+        <label>Starting *</label>
+        <input type="text" id="r-starting" placeholder="e.g. 10.01.2026">
+      </div>
+      <div class="field">
+        <label>Ending *</label>
+        <input type="text" id="r-ending" placeholder="e.g. 20.01.2026">
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="field">
+        <label>Diagnosis *</label>
+        <input type="text" id="r-diagnosis" list="diagnosis-list" placeholder="e.g. Hypertension">
+        <datalist id="diagnosis-list"></datalist>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="primary" onclick="addReport()">Save Report</button>
+      <button onclick="clearReportForm()">Clear</button>
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="shared.js"></script>
+<script src="js/add-report.js"></script>
+</body>
+</html>

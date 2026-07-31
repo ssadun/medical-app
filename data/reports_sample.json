@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "date": "10.02.2025",
+    "reportNumber": "RPT-2025-0001",
+    "reportType": "Consultation",
+    "starting": "10.02.2025",
+    "ending": "17.02.2025",
+    "doctor": "Dr. Sample A",
+    "diagnosis": "Hypertension"
+  },
+  {
+    "id": 2,
+    "date": "22.02.2025",
+    "reportNumber": "RPT-2025-0002",
+    "reportType": "Follow-up",
+    "starting": "22.02.2025",
+    "ending": "01.03.2025",
+    "doctor": "Dr. Sample B",
+    "diagnosis": "Type 2 Diabetes Mellitus"
+  },
+  {
+    "id": 3,
+    "date": "06.03.2025",
+    "reportNumber": "RPT-2025-0003",
+    "reportType": "Observation",
+    "starting": "06.03.2025",
+    "ending": "13.03.2025",
+    "doctor": "Dr. Sample C",
+    "diagnosis": "Migraine"
+  }
+]

@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "date": "14.01.2025",
+    "diagnosis": "Hypertension",
+    "department": "Cardiology",
+    "doctor": "Dr. Sample A"
+  },
+  {
+    "id": 2,
+    "date": "03.02.2025",
+    "diagnosis": "Type 2 Diabetes Mellitus",
+    "department": "Endocrinology",
+    "doctor": "Dr. Sample B"
+  },
+  {
+    "id": 3,
+    "date": "19.03.2025",
+    "diagnosis": "Migraine",
+    "department": "Neurology",
+    "doctor": "Dr. Sample C"
+  }
+]

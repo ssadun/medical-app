@@ -194,7 +194,7 @@ canvas{display:block;width:100%!important}
   margin:0 0 8px;text-align:center;font-size:24px;font-weight:700;letter-spacing:-.02em
 }
 .auth-modal h3::before{
-  content:'🔬';display:block;font-size:38px;line-height:1;margin-bottom:8px;
+  content:'⚕️';display:block;font-size:38px;line-height:1;margin-bottom:8px;
   filter:drop-shadow(0 0 16px rgba(79,142,247,.45))
 }
 .auth-modal p{

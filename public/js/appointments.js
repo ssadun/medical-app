@@ -121,7 +121,10 @@ function renderAppointments() {
       <td title="${a.hospital}">${a.hospital}</td>
       <td title="${a.service}">${a.service}</td>
       <td title="${a.doctor}">${a.doctor}</td>
-      <td><button class="sm danger" onclick="deleteAppointment(${a.id})">Delete</button></td>
+      <td>
+        <button class="sm" onclick="window.location.href='edit-appointment.html?id=${a.id}'">Edit</button>
+        <button class="sm danger" onclick="deleteAppointment(${a.id})">Delete</button>
+      </td>
     </tr>
   `).join('');
   const pages = Math.max(1, Math.ceil(rows.length / PS));

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medical App — Report CSV Import</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav id="sideNav"></nav>
+<main>
+  <div class="section-head">
+    <h2>Report CSV Import</h2>
+    <div id="topNav" class="section-actions"></div>
+  </div>
+
+  <div class="form-card">
+    <h3>Upload or Paste CSV</h3>
+    <p class="note" style="margin-bottom:12px">Each line: <code style="background:var(--bg4);padding:2px 6px;border-radius:4px;font-size:12px">DD.MM.YYYY,Report Number,Report Type,Starting,Ending,Doctor,Diagnosis</code> — header row is ignored automatically.</p>
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('csvInput').click()">
+      <div style="font-size:28px">📋</div>
+      <p>Drag a .txt or .csv file here or click to select</p>
+    </div>
+    <input type="file" id="csvInput" accept=".csv,.txt" style="display:none" onchange="handleFile(this.files[0])">
+    <textarea id="csvText" class="filter-input" placeholder="Or paste CSV text here..." rows="6" style="width:100%;margin-top:12px;font-family:monospace;font-size:12px;resize:vertical" oninput="handlePaste()"></textarea>
+    <div id="parseStatus" style="font-size:13px;color:var(--text2);margin-top:6px;min-height:18px"></div>
+  </div>
+
+  <div id="importPreview" style="display:none;margin-top:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <span id="importCount" style="font-size:13px;color:var(--text2)"></span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="top-nav-btn top-nav-trend" onclick="selectAll(true)"><span>☑️</span>Select all</button>
+        <button class="top-nav-btn top-nav-insights" onclick="selectAll(false)"><span>✖️</span>Clear</button>
+        <button class="top-nav-btn top-nav-import" onclick="saveSelected()"><span>💾</span>Save selected</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="fixed-cols">
+        <thead>
+          <tr>
+            <th style="width:40px"><input type="checkbox" id="chkAll" onchange="selectAll(this.checked)"></th>
+            <th style="width:110px">Date</th>
+            <th style="width:130px">Report Number</th>
+            <th style="width:140px">Report Type</th>
+            <th style="width:110px">Starting</th>
+            <th style="width:110px">Ending</th>
+            <th style="width:150px">Doctor</th>
+            <th>Diagnosis</th>
+            <th style="width:110px">Status</th>
+          </tr>
+        </thead>
+        <tbody id="previewBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="shared.js"></script>
+<script src="js/import-csv-report.js"></script>
+</body>
+</html>

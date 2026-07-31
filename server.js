@@ -12,6 +12,12 @@ const DATA_FILE         = path.join(__dirname, 'data', 'medical_results.json');
 const SAMPLE_FILE       = path.join(__dirname, 'data', 'medical_results_sample.json');
 const APPOINTMENTS_FILE        = path.join(__dirname, 'data', 'appointments.json');
 const APPOINTMENTS_SAMPLE_FILE = path.join(__dirname, 'data', 'appointments_sample.json');
+const DISEASES_FILE            = path.join(__dirname, 'data', 'diseases.json');
+const DISEASES_SAMPLE_FILE     = path.join(__dirname, 'data', 'diseases_sample.json');
+const REPORTS_FILE             = path.join(__dirname, 'data', 'reports.json');
+const REPORTS_SAMPLE_FILE      = path.join(__dirname, 'data', 'reports_sample.json');
+const MEDICAL_DIRECTORY_FILE   = path.join(__dirname, 'data', 'medical_directory.json');
+const MEDICAL_DIRECTORY_SAMPLE_FILE = path.join(__dirname, 'data', 'medical_directory_sample.json');
 const AUTH_COOKIE = 'medical_app_auth';
 const AUTH_TTL_MS = 4 * 60 * 60 * 1000;
 const AUTH_PBKDF2_ITERATIONS = 100000;
@@ -140,7 +146,8 @@ function toInternalSchema(data) {
     kayitlar: rawRecords.map(r => ({
       id: r.id,
       tarih: r.tarih ?? r.date ?? '',
-      tesis: r.tesis ?? r.facility ?? '',
+      hospital: r.hospital ?? r.tesis ?? r.facility ?? '',
+      tesis: r.hospital ?? r.tesis ?? r.facility ?? '',
       tahlil: r.tahlil ?? r.test ?? '',
       sonuc: r.sonuc ?? r.result ?? '',
       birim: r.birim ?? r.unit ?? '',
@@ -184,7 +191,8 @@ function toFileSchema(data) {
     records: data.kayitlar.map(r => ({
       id: r.id,
       date: r.tarih,
-      facility: r.tesis,
+      hospital: r.hospital ?? r.tesis,
+      facility: r.hospital ?? r.tesis,
       test: r.tahlil,
       result: r.sonuc,
       unit: r.birim,
@@ -249,6 +257,161 @@ function appointmentKey(date, hospital, doctor) {
   ].join('|');
 }
 
+function loadDiseases() {
+  const file = fs.existsSync(DISEASES_FILE)
+    ? DISEASES_FILE
+    : (fs.existsSync(DISEASES_SAMPLE_FILE) ? DISEASES_SAMPLE_FILE : null);
+  if (!file) return [];
+  try {
+    const raw = fs.readFileSync(file, 'utf-8');
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(d => {
+      const service = String(d.service || d.department || '').trim();
+      return {
+        id: Number(d.id) || 0,
+        date: String(d.date || '').trim(),
+        diagnosis: String(d.diagnosis || '').trim(),
+        service,
+        department: service,
+        doctor: String(d.doctor || '').trim()
+      };
+    });
+  } catch { return []; }
+}
+
+function saveDiseases(list) {
+  const normalized = (Array.isArray(list) ? list : []).map(d => ({
+    id: Number(d.id) || 0,
+    date: String(d.date || '').trim(),
+    diagnosis: String(d.diagnosis || '').trim(),
+    service: String(d.service || d.department || '').trim(),
+    doctor: String(d.doctor || '').trim()
+  }));
+  fs.writeFileSync(DISEASES_FILE, JSON.stringify(normalized, null, 2), 'utf-8');
+}
+
+function nextDiseaseId(list) {
+  return list.length ? Math.max(...list.map(d => Number(d.id) || 0)) + 1 : 1;
+}
+
+function loadReports() {
+  const file = fs.existsSync(REPORTS_FILE)
+    ? REPORTS_FILE
+    : (fs.existsSync(REPORTS_SAMPLE_FILE) ? REPORTS_SAMPLE_FILE : null);
+  if (!file) return [];
+  try {
+    const raw = fs.readFileSync(file, 'utf-8');
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(r => ({
+      id: Number(r.id) || 0,
+      date: String(r.date || '').trim(),
+      reportNumber: String(r.reportNumber || '').trim(),
+      reportType: String(r.reportType || r.department || '').trim(),
+      starting: String(r.starting || '').trim(),
+      ending: String(r.ending || '').trim(),
+      doctor: String(r.doctor || '').trim(),
+      diagnosis: String(r.diagnosis || '').trim()
+    }));
+  } catch { return []; }
+}
+
+function saveReports(list) {
+  fs.writeFileSync(REPORTS_FILE, JSON.stringify(list, null, 2), 'utf-8');
+}
+
+function nextReportId(list) {
+  return list.length ? Math.max(...list.map(r => Number(r.id) || 0)) + 1 : 1;
+}
+
+function normalizeDiseasePart(v) {
+  return String(v || '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function uniqSorted(values) {
+  return [...new Set((Array.isArray(values) ? values : [])
+    .map(v => String(v || '').trim())
+    .filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr'));
+}
+
+function normalizeMedicalDirectory(obj) {
+  const src = (obj && typeof obj === 'object') ? obj : {};
+  return {
+    hospitals: uniqSorted(src.hospitals),
+    services: uniqSorted(src.services),
+    doctors: uniqSorted(src.doctors),
+    diagnosis: uniqSorted(src.diagnosis),
+    reportTypes: uniqSorted(src.reportTypes),
+    testTypes: uniqSorted(src.testTypes)
+  };
+}
+
+function buildDefaultMedicalDirectory() {
+  const data = loadData();
+  const appointments = loadAppointments();
+  const diseases = loadDiseases();
+  const reports = loadReports();
+  return normalizeMedicalDirectory({
+    hospitals: [
+      ...appointments.map(a => a.hospital),
+      ...data.kayitlar.map(r => r.hospital || r.tesis || '')
+    ],
+    services: [
+      ...appointments.map(a => a.service),
+      ...diseases.map(d => d.service || d.department || '')
+    ],
+    doctors: [
+      ...appointments.map(a => a.doctor),
+      ...diseases.map(d => d.doctor),
+      ...reports.map(r => r.doctor)
+    ],
+    diagnosis: [
+      ...diseases.map(d => d.diagnosis),
+      ...reports.map(r => r.diagnosis)
+    ],
+    reportTypes: reports.map(r => r.reportType),
+    testTypes: [
+      ...Object.values(data.testCatalog || {}),
+      ...data.kayitlar.map(r => r.tahlil)
+    ]
+  });
+}
+
+function loadMedicalDirectory() {
+  const file = fs.existsSync(MEDICAL_DIRECTORY_FILE)
+    ? MEDICAL_DIRECTORY_FILE
+    : (fs.existsSync(MEDICAL_DIRECTORY_SAMPLE_FILE) ? MEDICAL_DIRECTORY_SAMPLE_FILE : null);
+  if (!file) return buildDefaultMedicalDirectory();
+  try {
+    const raw = fs.readFileSync(file, 'utf-8');
+    return normalizeMedicalDirectory(JSON.parse(raw));
+  } catch {
+    return buildDefaultMedicalDirectory();
+  }
+}
+
+function saveMedicalDirectory(dir) {
+  fs.writeFileSync(MEDICAL_DIRECTORY_FILE, JSON.stringify(normalizeMedicalDirectory(dir), null, 2), 'utf-8');
+}
+
+function diseaseKey(date, diagnosis, service, doctor) {
+  return [
+    String(date || '').trim(),
+    normalizeDiseasePart(diagnosis),
+    normalizeDiseasePart(service),
+    normalizeDiseasePart(doctor)
+  ].join('|');
+}
+
+function reportKey(date, reportNumber, doctor) {
+  return [
+    String(date || '').trim(),
+    normalizeDiseasePart(reportNumber),
+    normalizeDiseasePart(doctor)
+  ].join('|');
+}
+
 function loadData() {
   const file = fs.existsSync(DATA_FILE) ? DATA_FILE : SAMPLE_FILE;
   const raw = fs.readFileSync(file, 'utf-8');
@@ -285,6 +448,11 @@ function nextId(kayitlar) {
   return kayitlar.length ? Math.max(...kayitlar.map(r => r.id || 0)) + 1 : 1;
 }
 
+function normalizeTestHospitalFields(record) {
+  const hospital = String(record?.hospital ?? record?.tesis ?? record?.facility ?? '').trim();
+  return { ...record, hospital, tesis: hospital };
+}
+
 // ── PDF Parser ───────────────────────────────────────────────
 // Tries to extract lab rows from Turkish lab report PDF text.
 // Returns array of partial kayit objects (user can review before saving).
@@ -303,11 +471,11 @@ function parsePdfText(text) {
   const dateMatch = text.match(/(\d{2})[./](\d{2})[./](\d{4})/);
   if (dateMatch) detectedDate = `${dateMatch[1]}.${dateMatch[2]}.${dateMatch[3]}`;
 
-  // Try to detect facility name (usually near top)
-  let detectedFacility = '';
-  const facilityPatterns = ['Hastane', 'Klinik', 'Laboratuvar', 'Medical', 'Tıp', 'Sağlık'];
+  // Try to detect hospital name (usually near top)
+  let detectedHospital = '';
+  const hospitalPatterns = ['Hastane', 'Klinik', 'Laboratuvar', 'Medical', 'Tıp', 'Sağlık'];
   for (const line of lines.slice(0, 20)) {
-    if (facilityPatterns.some(p => line.includes(p))) { detectedFacility = line; break; }
+    if (hospitalPatterns.some(p => line.includes(p))) { detectedHospital = line; break; }
   }
 
   for (const line of lines) {
@@ -325,7 +493,8 @@ function parsePdfText(text) {
       );
       results.push({
         tarih:   detectedDate,
-        tesis:   detectedFacility,
+        hospital: detectedHospital,
+        tesis:   detectedHospital,
         tahlil:  m[1].trim(),
         sonuc:   sonuc,
         birim:   m[3].trim(),
@@ -336,7 +505,7 @@ function parsePdfText(text) {
     }
   }
 
-  return { results, detectedDate, detectedFacility, rawLineCount: lines.length };
+  return { results, detectedDate, detectedHospital, detectedFacility: detectedHospital, rawLineCount: lines.length };
 }
 
 // ── API Routes ───────────────────────────────────────────────
@@ -368,7 +537,12 @@ app.post('/api/auth/logout', (req, res) => {
 app.get('/api/data', (req, res) => {
   try {
     const data = loadData();
-    res.json({ ...data, kayitlar: data.kayitlar.filter(r => r.active !== false) });
+    res.json({
+      ...data,
+      kayitlar: data.kayitlar
+        .filter(r => r.active !== false)
+        .map(r => normalizeTestHospitalFields(r))
+    });
   } catch (e) {
     res.status(500).json({ error: 'Could not read data: ' + e.message });
   }
@@ -378,7 +552,12 @@ app.get('/api/data', (req, res) => {
 app.get('/api/kayit/deleted', (req, res) => {
   try {
     const data = loadData();
-    res.json({ ok: true, kayitlar: data.kayitlar.filter(r => r.active === false) });
+    res.json({
+      ok: true,
+      kayitlar: data.kayitlar
+        .filter(r => r.active === false)
+        .map(r => normalizeTestHospitalFields(r))
+    });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -393,6 +572,29 @@ app.get('/api/meta', (req, res) => {
 app.get('/api/test-insights', (req, res) => {
   const data = loadData();
   res.json({ ok: true, testInsights: data.testInsights || {} });
+});
+
+app.get('/api/medical-directory', (req, res) => {
+  try {
+    res.json({ ok: true, directory: loadMedicalDirectory() });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/medical-directory/:key', (req, res) => {
+  try {
+    const key = String(req.params.key || '').trim();
+    const allowed = new Set(['hospitals', 'services', 'doctors', 'diagnosis', 'reportTypes', 'testTypes']);
+    if (!allowed.has(key)) return res.status(400).json({ error: 'Invalid directory key' });
+    const values = Array.isArray(req.body.values) ? req.body.values : [];
+    const dir = loadMedicalDirectory();
+    dir[key] = uniqSorted(values);
+    saveMedicalDirectory(dir);
+    res.json({ ok: true, key, values: dir[key] });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // PUT one test insight entry
@@ -427,7 +629,7 @@ app.put('/api/test-insight', (req, res) => {
 app.post('/api/kayit', (req, res) => {
   try {
     const data = loadData();
-    const kayit = { id: nextId(data.kayitlar), ...req.body };
+    const kayit = normalizeTestHospitalFields({ id: nextId(data.kayitlar), ...req.body });
     // Auto-detect flag if not provided
     if (typeof kayit.flag === 'undefined') {
       const v  = parseFloat(kayit.sonuc);
@@ -452,7 +654,7 @@ app.post('/api/kayitlar', (req, res) => {
     const newOnes = req.body.kayitlar || [];
     let added = 0;
     for (const k of newOnes) {
-      data.kayitlar.push({ id: nextId(data.kayitlar), ...k, active: true, deletedAt: '' });
+      data.kayitlar.push(normalizeTestHospitalFields({ id: nextId(data.kayitlar), ...k, active: true, deletedAt: '' }));
       added++;
     }
     saveData(data);
@@ -610,13 +812,328 @@ app.delete('/api/appointments/:id', (req, res) => {
   }
 });
 
-// PUT update a record
+// PUT update an appointment
+app.put('/api/appointments/:id', (req, res) => {
+  try {
+    const list = loadAppointments();
+    const id = parseInt(req.params.id, 10);
+    const idx = list.findIndex(a => a.id === id);
+    if (idx === -1) return res.status(404).json({ error: 'Appointment not found' });
+
+    const date     = String(req.body.date     || '').trim();
+    const hospital = String(req.body.hospital || '').trim();
+    const service  = String(req.body.service  || '').trim();
+    const doctor   = String(req.body.doctor   || '').trim();
+
+    if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+      return res.status(400).json({ error: 'date must be DD.MM.YYYY' });
+    }
+    if (!hospital || !service || !doctor) {
+      return res.status(400).json({ error: 'hospital, service and doctor are required' });
+    }
+
+    const key = appointmentKey(date, hospital, doctor);
+    const exists = list.some(a => a.id !== id && a.active !== false && appointmentKey(a.date, a.hospital, a.doctor) === key);
+    if (exists) return res.status(409).json({ error: 'Duplicate: same date, hospital and doctor already exists' });
+
+    list[idx] = { ...list[idx], date, hospital, service, doctor };
+    saveAppointments(list);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET all diseases
+app.get('/api/diseases', (req, res) => {
+  try {
+    res.json({ ok: true, diseases: loadDiseases() });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST add single disease record
+app.post('/api/diseases', (req, res) => {
+  try {
+    const list = loadDiseases();
+    const date = String(req.body.date || '').trim();
+    const diagnosis = String(req.body.diagnosis || '').trim();
+    const service = String(req.body.service || req.body.department || '').trim();
+    const doctor = String(req.body.doctor || '').trim();
+
+    if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+      return res.status(400).json({ error: 'date must be DD.MM.YYYY' });
+    }
+    if (!diagnosis || !service || !doctor) {
+      return res.status(400).json({ error: 'diagnosis, service and doctor are required' });
+    }
+
+    const key = diseaseKey(date, diagnosis, service, doctor);
+    const exists = list.some(d => diseaseKey(d.date, d.diagnosis, d.service || d.department, d.doctor) === key);
+    if (exists) {
+      return res.status(409).json({ error: 'Duplicate disease record: same date, diagnosis, service and doctor already exists' });
+    }
+
+    const disease = { id: nextDiseaseId(list), date, diagnosis, service, department: service, doctor };
+    list.push(disease);
+    saveDiseases(list);
+    res.json({ ok: true, disease });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST bulk import diseases from CSV
+app.post('/api/diseases/import', (req, res) => {
+  try {
+    const rows = req.body.rows;
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return res.status(400).json({ error: 'No rows provided' });
+    }
+
+    const list = loadDiseases();
+    const existingKeys = new Set(list.map(d => diseaseKey(d.date, d.diagnosis, d.service || d.department, d.doctor)));
+    const incomingKeys = new Set();
+    let added = 0;
+    const errors = [];
+
+    rows.forEach((row, i) => {
+      const date = String(row.date || '').trim();
+      const diagnosis = String(row.diagnosis || '').trim();
+      const service = String(row.service || row.department || '').trim();
+      const doctor = String(row.doctor || '').trim();
+
+      if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+        errors.push(`Row ${i + 1}: invalid date "${date}"`);
+        return;
+      }
+      if (!diagnosis || !service || !doctor) {
+        errors.push(`Row ${i + 1}: diagnosis, service and doctor are required`);
+        return;
+      }
+
+      const key = diseaseKey(date, diagnosis, service, doctor);
+      if (existingKeys.has(key)) {
+        errors.push(`Row ${i + 1}: duplicate of existing disease record (same date, diagnosis, service, doctor)`);
+        return;
+      }
+      if (incomingKeys.has(key)) {
+        errors.push(`Row ${i + 1}: duplicate within import file (same date, diagnosis, service, doctor)`);
+        return;
+      }
+
+      list.push({ id: nextDiseaseId(list), date, diagnosis, service, department: service, doctor });
+      incomingKeys.add(key);
+      added++;
+    });
+
+    if (added > 0) saveDiseases(list);
+    res.json({ ok: true, added, errors });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// DELETE disease record
+app.delete('/api/diseases/:id', (req, res) => {
+  try {
+    const list = loadDiseases();
+    const id = parseInt(req.params.id, 10);
+    const filtered = list.filter(d => d.id !== id);
+    if (filtered.length === list.length) return res.status(404).json({ error: 'Disease record not found' });
+    saveDiseases(filtered);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PUT update a disease record
+app.put('/api/diseases/:id', (req, res) => {
+  try {
+    const list = loadDiseases();
+    const id = parseInt(req.params.id, 10);
+    const idx = list.findIndex(d => d.id === id);
+    if (idx === -1) return res.status(404).json({ error: 'Disease record not found' });
+
+    const date       = String(req.body.date       || '').trim();
+    const diagnosis  = String(req.body.diagnosis  || '').trim();
+    const service    = String(req.body.service    || req.body.department || '').trim();
+    const doctor     = String(req.body.doctor     || '').trim();
+
+    if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+      return res.status(400).json({ error: 'date must be DD.MM.YYYY' });
+    }
+    if (!diagnosis || !service || !doctor) {
+      return res.status(400).json({ error: 'diagnosis, service and doctor are required' });
+    }
+
+    const key = diseaseKey(date, diagnosis, service, doctor);
+    const exists = list.some(d => d.id !== id && diseaseKey(d.date, d.diagnosis, d.service || d.department, d.doctor) === key);
+    if (exists) return res.status(409).json({ error: 'Duplicate: same date, diagnosis, service and doctor already exists' });
+
+    list[idx] = { ...list[idx], date, diagnosis, service, department: service, doctor };
+    saveDiseases(list);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET all reports
+app.get('/api/reports', (req, res) => {
+  try {
+    res.json({ ok: true, reports: loadReports() });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST add single report record
+app.post('/api/reports', (req, res) => {
+  try {
+    const list = loadReports();
+    const date = String(req.body.date || '').trim();
+    const reportNumber = String(req.body.reportNumber || '').trim();
+    const reportType = String(req.body.reportType || '').trim();
+    const starting = String(req.body.starting || '').trim();
+    const ending = String(req.body.ending || '').trim();
+    const doctor = String(req.body.doctor || '').trim();
+    const diagnosis = String(req.body.diagnosis || '').trim();
+
+    if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+      return res.status(400).json({ error: 'date must be DD.MM.YYYY' });
+    }
+    if (!reportNumber || !reportType || !starting || !ending || !doctor || !diagnosis) {
+      return res.status(400).json({ error: 'reportNumber, reportType, starting, ending, doctor and diagnosis are required' });
+    }
+
+    const key = reportKey(date, reportNumber, doctor);
+    const exists = list.some(r => reportKey(r.date, r.reportNumber, r.doctor) === key);
+    if (exists) {
+      return res.status(409).json({ error: 'Duplicate report record: same date, report number and doctor already exists' });
+    }
+
+    const report = { id: nextReportId(list), date, reportNumber, reportType, starting, ending, doctor, diagnosis };
+    list.push(report);
+    saveReports(list);
+    res.json({ ok: true, report });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST bulk import reports from CSV
+app.post('/api/reports/import', (req, res) => {
+  try {
+    const rows = req.body.rows;
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return res.status(400).json({ error: 'No rows provided' });
+    }
+
+    const list = loadReports();
+    const existingKeys = new Set(list.map(r => reportKey(r.date, r.reportNumber, r.doctor)));
+    const incomingKeys = new Set();
+    let added = 0;
+    const errors = [];
+
+    rows.forEach((row, i) => {
+      const date = String(row.date || '').trim();
+      const reportNumber = String(row.reportNumber || '').trim();
+      const reportType = String(row.reportType || '').trim();
+      const starting = String(row.starting || '').trim();
+      const ending = String(row.ending || '').trim();
+      const doctor = String(row.doctor || '').trim();
+      const diagnosis = String(row.diagnosis || '').trim();
+
+      if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+        errors.push(`Row ${i + 1}: invalid date "${date}"`);
+        return;
+      }
+      if (!reportNumber || !reportType || !starting || !ending || !doctor || !diagnosis) {
+        errors.push(`Row ${i + 1}: reportNumber, reportType, starting, ending, doctor and diagnosis are required`);
+        return;
+      }
+
+      const key = reportKey(date, reportNumber, doctor);
+      if (existingKeys.has(key)) {
+        errors.push(`Row ${i + 1}: duplicate of existing report record (same date, report number, doctor)`);
+        return;
+      }
+      if (incomingKeys.has(key)) {
+        errors.push(`Row ${i + 1}: duplicate within import file (same date, report number, doctor)`);
+        return;
+      }
+
+      list.push({ id: nextReportId(list), date, reportNumber, reportType, starting, ending, doctor, diagnosis });
+      incomingKeys.add(key);
+      added++;
+    });
+
+    if (added > 0) saveReports(list);
+    res.json({ ok: true, added, errors });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// DELETE report record
+app.delete('/api/reports/:id', (req, res) => {
+  try {
+    const list = loadReports();
+    const id = parseInt(req.params.id, 10);
+    const filtered = list.filter(r => r.id !== id);
+    if (filtered.length === list.length) return res.status(404).json({ error: 'Report record not found' });
+    saveReports(filtered);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PUT update a report record
+app.put('/api/reports/:id', (req, res) => {
+  try {
+    const list = loadReports();
+    const id = parseInt(req.params.id, 10);
+    const idx = list.findIndex(r => r.id === id);
+    if (idx === -1) return res.status(404).json({ error: 'Report record not found' });
+
+    const date         = String(req.body.date         || '').trim();
+    const reportNumber = String(req.body.reportNumber || '').trim();
+    const reportType   = String(req.body.reportType   || '').trim();
+    const starting     = String(req.body.starting     || '').trim();
+    const ending       = String(req.body.ending       || '').trim();
+    const doctor       = String(req.body.doctor       || '').trim();
+    const diagnosis    = String(req.body.diagnosis    || '').trim();
+
+    if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+      return res.status(400).json({ error: 'date must be DD.MM.YYYY' });
+    }
+    if (!reportNumber || !reportType || !starting || !ending || !doctor || !diagnosis) {
+      return res.status(400).json({ error: 'reportNumber, reportType, starting, ending, doctor and diagnosis are required' });
+    }
+
+    const key = reportKey(date, reportNumber, doctor);
+    const exists = list.some(r => r.id !== id && reportKey(r.date, r.reportNumber, r.doctor) === key);
+    if (exists) return res.status(409).json({ error: 'Duplicate: same date, report number and doctor already exists' });
+
+    list[idx] = { ...list[idx], date, reportNumber, reportType, starting, ending, doctor, diagnosis };
+    saveReports(list);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PUT update a test record
 app.put('/api/kayit/:id', (req, res) => {
   try {
     const data = loadData();
     const idx  = data.kayitlar.findIndex(r => r.id === parseInt(req.params.id));
     if (idx === -1) return res.status(404).json({ error: 'Record not found' });
-    data.kayitlar[idx] = { ...data.kayitlar[idx], ...req.body };
+    data.kayitlar[idx] = normalizeTestHospitalFields({ ...data.kayitlar[idx], ...req.body });
     saveData(data);
     res.json({ ok: true });
   } catch (e) {
@@ -707,6 +1224,7 @@ app.post('/api/import-pdf', upload.single('pdf'), async (req, res) => {
       ok: true,
       pageCount:       parsed.numpages,
       detectedDate:    result.detectedDate,
+      detectedHospital: result.detectedHospital,
       detectedFacility: result.detectedFacility,
       rawLineCount:    result.rawLineCount,
       results:         result.results

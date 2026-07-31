@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medical App — Edit Test Result</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<nav id="sideNav"></nav>
+<main>
+  <div class="section-head">
+    <h2>Edit Test Result</h2>
+    <div id="topNav" class="section-actions"></div>
+  </div>
+  <div class="form-card">
+    <h3>Test Information</h3>
+    <div class="grid2">
+      <div class="field"><label>Date *</label><input type="text" id="f-tarih" placeholder="DD.MM.YYYY"></div>
+      <div class="field"><label>Hospital *</label>
+        <input type="text" id="f-hospital" list="hospital-list" placeholder="Hospital name">
+        <datalist id="hospital-list"></datalist>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="field"><label>Test Name *</label>
+        <input type="text" id="f-tahlil" list="tahlil-list" placeholder="e.g. ALT, Hemoglobin...">
+        <datalist id="tahlil-list"></datalist>
+      </div>
+      <div class="field"><label>Result *</label><input type="text" id="f-sonuc" placeholder="e.g. 37"></div>
+    </div>
+    <div class="grid3" style="margin-top:10px">
+      <div class="field"><label>Unit</label><input type="text" id="f-birim" placeholder="e.g. U/L"></div>
+      <div class="field"><label>Ref Low</label><input type="text" id="f-refalt" placeholder="e.g. 0"></div>
+      <div class="field"><label>Ref High</label><input type="text" id="f-refust" placeholder="e.g. 55"></div>
+    </div>
+    <div class="form-actions">
+      <button class="primary" onclick="saveRecord()">Save Changes</button>
+      <button onclick="window.location.href='list-test.html'">Cancel</button>
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="shared.js"></script>
+<script src="js/edit-test.js"></script>
+</body>
+</html>

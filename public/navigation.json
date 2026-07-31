@@ -2,28 +2,61 @@
   "navigation": [
     { "label": "Dashboard", "href": "dashboard.html", "icon": "📊" },
     {
-      "label": "Tests",
-      "href": "test.html",
-      "icon": "🧪",
+      "label": "Appointments",
+      "href": "list-appointments.html",
+      "icon": "🏥",
       "navCls": "top-nav-trend",
       "children": [
-        { "label": "Trend Chart",      "href": "trend.html",           "icon": "📈", "navCls": "top-nav-trend" },
-        { "label": "Test Insights",    "href": "insights.html",        "icon": "🧾", "navCls": "top-nav-insights" },
+        { "label": "Schedule View",        "href": "view-appointments-schedule.html",              "icon": "🗓️", "navCls": "top-nav-insights" },
+        { "label": "Add Appointment",       "href": "add-appoinment.html",        "icon": "➕", "navCls": "top-nav-add" },
+        { "label": "CSV Import",            "href": "import-csv-appoinment.html", "icon": "📄", "navCls": "top-nav-import" },
+        { "label": "Recover",               "href": "deleted-appointments.html",  "icon": "♻️", "navCls": "top-nav-import" }
+      ]
+    },
+    {
+      "label": "Diseases",
+      "href": "list-diseases.html",
+      "icon": "🩺",
+      "navCls": "top-nav-trend",
+      "children": [
+        { "label": "Add Disease", "href": "add-disease.html",        "icon": "➕", "navCls": "top-nav-add" },
+        { "label": "CSV Import",  "href": "import-csv-disease.html", "icon": "📄", "navCls": "top-nav-import" }
+      ]
+    },
+    {
+      "label": "Reports",
+      "href": "list-reports.html",
+      "icon": "📑",
+      "navCls": "top-nav-trend",
+      "children": [
+        { "label": "Add Report", "href": "add-report.html",        "icon": "➕", "navCls": "top-nav-add" },
+        { "label": "CSV Import", "href": "import-csv-report.html", "icon": "📄", "navCls": "top-nav-import" }
+      ]
+    },
+    {
+      "label": "Tests",
+      "href": "list-test.html",
+      "icon": "🔬",
+      "navCls": "top-nav-trend",
+      "children": [
+        { "label": "Trend Chart",      "href": "view-tests-trend.html",           "icon": "📈", "navCls": "top-nav-trend" },
         { "label": "Add Test Results", "href": "add-test.html",        "icon": "➕", "navCls": "top-nav-add" },
         { "label": "CSV Import",       "href": "import-csv-test.html", "icon": "📄", "navCls": "top-nav-import" },
         { "label": "Recover",          "href": "deleted-tests.html",    "icon": "♻️", "navCls": "top-nav-import" }
       ]
     },
     {
-      "label": "Appointments",
-      "href": "appointments.html",
-      "icon": "🏥",
+      "label": "Medical Directory",
+      "href": "manage.html",
+      "icon": "📚",
       "navCls": "top-nav-trend",
       "children": [
-        { "label": "Schedule View",        "href": "schedule.html",              "icon": "🗓️", "navCls": "top-nav-insights" },
-        { "label": "Add Appointment",       "href": "add-appoinment.html",        "icon": "➕", "navCls": "top-nav-add" },
-        { "label": "CSV Import",            "href": "import-csv-appoinment.html", "icon": "📄", "navCls": "top-nav-import" },
-        { "label": "Recover",               "href": "deleted-appointments.html",  "icon": "♻️", "navCls": "top-nav-import" }
+        { "label": "Hospitals", "href": "manage-hospitals.html", "icon": "🏥", "navCls": "top-nav-import" },
+        { "label": "Services", "href": "manage-services.html", "icon": "🩻", "navCls": "top-nav-import" },
+          { "label": "Doctors", "href": "manage-doctors.html", "icon": "👨🏻‍⚕️", "navCls": "top-nav-import" },
+        { "label": "Diagnosis", "href": "manage-disease-diagnosis.html", "icon": "🧾", "navCls": "top-nav-import" },
+        { "label": "Report Types", "href": "manage-report-types.html", "icon": "📑", "navCls": "top-nav-import" },
+        { "label": "Test Types", "href": "manage-test-types.html", "icon": "🧪", "navCls": "top-nav-import" }
       ]
     },
     {

@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔬 Medical App — Add Appointment</title>
+<title>Medical App — Add Appointment</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -23,17 +23,20 @@
       </div>
       <div class="field">
         <label>Hospital *</label>
-        <input type="text" id="a-hospital" placeholder="Hospital name">
+        <input type="text" id="a-hospital" list="hospital-list" placeholder="Hospital name">
+        <datalist id="hospital-list"></datalist>
       </div>
     </div>
     <div class="grid2" style="margin-top:10px">
       <div class="field">
         <label>Service *</label>
-        <input type="text" id="a-service" placeholder="e.g. Cardiology">
+        <input type="text" id="a-service" list="service-list" placeholder="e.g. Cardiology">
+        <datalist id="service-list"></datalist>
       </div>
       <div class="field">
         <label>Doctor *</label>
-        <input type="text" id="a-doctor" placeholder="Doctor name">
+        <input type="text" id="a-doctor" list="doctor-list" placeholder="Doctor name">
+        <datalist id="doctor-list"></datalist>
       </div>
     </div>
     <div class="form-actions">
@@ -46,19 +49,6 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="auth-backdrop" id="authBackdrop">
-  <div class="auth-modal">
-    <h3>Sign In Required</h3>
-    <p>Please sign in to access your lab records.</p>
-    <form class="auth-form" id="authForm">
-      <input type="text" id="authUser" placeholder="Username" autocomplete="username" required>
-      <input type="password" id="authPass" placeholder="Password" autocomplete="current-password" required>
-      <div class="auth-error" id="authError"></div>
-      <div class="auth-row"><button class="primary" type="submit">Sign In</button></div>
-    </form>
-  </div>
-</div>
-
 <script src="shared.js"></script>
 <script src="js/add-appoinment.js"></script>
 </body>

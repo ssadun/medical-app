@@ -20,10 +20,10 @@ async function handlePdfFile(file) {
   const d = await res.json();
   if (!d.ok) { toast('Could not read PDF: ' + (d.error || ''), 'err'); document.getElementById('importStatus').textContent = ''; return; }
   document.getElementById('importStatus').textContent = `${d.pageCount} pages read · ${d.results.length} rows detected`;
-  renderImportPreview(d.results, d.detectedDate, d.detectedFacility);
+  renderImportPreview(d.results, d.detectedDate, d.detectedHospital || d.detectedFacility || '');
 }
 
-function renderImportPreview(rows, date, facility) {
+function renderImportPreview(rows, date, hospital) {
   if (!rows.length) { document.getElementById('importPreview').style.display = 'none'; toast('No parsable rows found', 'err'); return; }
   document.getElementById('importCount').textContent = `${rows.length} rows - select the ones you want to save`;
   document.getElementById('importPreview').style.display = 'block';
@@ -36,7 +36,7 @@ function renderImportPreview(rows, date, facility) {
       <input type="text" value="${r.refAlt}" onchange="window._importRows[${i}].refAlt=this.value" style="font-size:12px;padding:3px 6px">
       <input type="text" value="${r.refUst}" onchange="window._importRows[${i}].refUst=this.value" style="font-size:12px;padding:3px 6px">
       <input type="text" value="${r.tarih || date}" onchange="window._importRows[${i}].tarih=this.value" style="font-size:12px;padding:3px 6px">
-      <input type="text" value="${r.tesis || facility}" onchange="window._importRows[${i}].tesis=this.value" style="font-size:12px;padding:3px 6px">
+      <input type="text" value="${r.hospital || r.tesis || hospital}" onchange="window._importRows[${i}].hospital=this.value" style="font-size:12px;padding:3px 6px">
       <input type="checkbox" checked id="ic-${i}">
     </div>`).join('');
 }
@@ -53,7 +53,7 @@ async function saveImport() {
   const d = await res.json();
   if (d.ok) {
     toast(`${d.added} records added ✓`, 'ok');
-    setTimeout(() => window.location.href = 'test.html', 800);
+    setTimeout(() => window.location.href = 'list-test.html', 800);
   } else toast('Error: ' + d.error, 'err');
 }
 
